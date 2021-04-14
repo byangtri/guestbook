@@ -10,6 +10,6 @@ spec:
     server: {{ .Values.spec.clusters.stage }}
   project: {{ .Values.project }}
   source:
-    path: {{ .Values.applications.guestbook[0].path }}
+    path: {{ .Values.applications.guestbook.path }}
     repoURL: {{ .Values.repo }}
-    targetRevision: {{ .Values.guestbook[0].target }}
+    targetRevision: {{ .Values.guestbook.target }}
