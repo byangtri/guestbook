@@ -4,7 +4,7 @@ metadata:
   name: guestbook-{{ .Values.spec.clusters.stage }}
   namespace: argocd
   finalizers:
-  - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     server: {{ .Values.spec.clusters.stage }}
