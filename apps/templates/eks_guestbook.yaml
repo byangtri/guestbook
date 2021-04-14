@@ -7,7 +7,7 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
-    server: {{ .Values.spec.clusters.stage }}
+    server: {{ .Values.clusters.stage }}
   project: {{ .Values.project }}
   source:
     path: {{ .Values.applications.guestbook.path }}
