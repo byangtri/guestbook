@@ -25,5 +25,3 @@ applications:
   guestbook:
     - path: helm-guestbook
       target: HEAD
-    - path: api-a/overlays/prod
-      target: prod-api

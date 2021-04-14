@@ -2,14 +2,18 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: guestbook-staging
+  # You'll usually want to add your resources to the argocd namespace.
   namespace: argocd
+  # Add a this finalizer ONLY if you want these to cascade delete.
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
+  # Destination cluster and namespace to deploy the application
   destination:
     server: {{ .Values.clusters.stage }}
   project: {{ .Values.project }}
+  # Source of the application manifests
   source:
-    path: {{ .Values.applications.guestbook[0].path }}
+    path: {{ .Values.applications.guestbook.path }}
     repoURL: {{ .Values.repo }}
-    targetRevision: {{ .Values.guestbook[0].target }}
+    targetRevision: {{ .Values.guestbook.target }}
