@@ -16,4 +16,4 @@ spec:
   source:
     path: {{ .Values.applications.guestbook.path }}
     repoURL: {{ .Values.repo }}
-    targetRevision: {{ .Values.guestbook.target }}
+    targetRevision: {{ .Values.applications.guestbook.target }}

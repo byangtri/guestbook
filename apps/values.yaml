@@ -5,7 +5,7 @@
 # change with caution
 project: 'default'
 # namespace: 'seller-ads'
-repo: 'https://github.com/byangtri/argocd-example-apps'
+repo: 'https://github.com/byangtri/guestbook.git'
 
 #ConfigMap and Secret resources in this directory
 common: .common
