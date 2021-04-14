@@ -23,5 +23,5 @@ groups:
 # this is where we specify each app's configuration and destination
 applications:
   guestbook:
-    - path: helm-guestbook
-      target: HEAD
+    path: helm-guestbook
+    target: HEAD
