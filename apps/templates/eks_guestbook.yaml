@@ -20,9 +20,12 @@ spec:
     helm:
       # Values file as block file
       values: |
+        image:
+            repository: gcr.io/heptio-images/ks-guestbook-demo
+            tag: 0.2
         ingress:
             host: guestbook.18.189.211.195.nip.io
         metrics:
             prometheus:
                 address: "http://a0179abbebc504fe1a02cc2868d10d20-1436141555.us-east-2.elb.amazonaws.com:9090/"
-        query: rate(nginx_ingress_controller_requests{ingress="eks-guestbook-helm-guestbook", controller_class="nginx",exported_namespace="eks-guestbook-helm-guestbook",status=~"[2].*"}[1h])
+        query: rate(nginx_ingress_controller_requests{ingress="guestbook-staging-helm-guestbook", controller_class="nginx",exported_namespace="guestbook-staging-helm-guestbook",status=~"[2].*"}[1h])
