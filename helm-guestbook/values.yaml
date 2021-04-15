@@ -21,9 +21,11 @@ ingress:
     # nginx.ingress.kubernetes.io/rewrite-target: /
     # ingress.kubernetes.io/ssl-redirect: "true"
     # nginx.ingress.kubernetes.io/default-backend: guestbook-helm-guestbook
-    # nginx.ingress.kubernetes.io/canary-by-header: "Region"
-    # nginx.ingress.kubernetes.io/canary-by-header-pattern: "aspc|eu"
     # kubernetes.io/tls-acme: "true"
+  canary:
+    annotations:
+      canary-by-header: tenantID
+      canary-by-header-pattern: 10|11|12|13 # tenantID values
   path: /
   host: guestbook.18.223.163.42.nip.io
   tls: []

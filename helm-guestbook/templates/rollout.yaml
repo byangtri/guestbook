@@ -64,9 +64,10 @@ spec:
           # the Nginx to split traffic between the canary and stable Service using headers
           stableIngress: {{ template "helm-guestbook.fullname" . }}
           annotationPrefix: nginx.ingress.kubernetes.io 
-          additionalIngressAnnotations:  
-            canary-by-header: tenantID
-            canary-by-header-pattern: 10|11|12|13 # tenantID values
+          {{- with .Values.ingress.canary.annotations }}
+          additionalIngressAnnotations:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
       steps:
       - analysis:
           templates:
