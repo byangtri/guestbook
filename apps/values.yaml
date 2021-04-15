@@ -13,7 +13,7 @@ repo: 'https://github.com/byangtri/guestbook.git'
 # these are cluster addresses
 clusters:
   stage: https://kubernetes.default.svc
-  prod-1: https://myakscluster-a5a0451f.hcp.eastus.azmk8s.io:443
+  prod1: 'https://myakscluster-a5a0451f.hcp.eastus.azmk8s.io:443'
 
 # groups describe deployment clusters of each app in Argo CD Projects
 groups:
