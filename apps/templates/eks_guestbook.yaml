@@ -21,7 +21,7 @@ spec:
       # Values file as block file
       values: |
         ingress:
-            host: guestbook.18.223.163.42.nip.io
+            host: guestbook.18.189.211.195.nip.io
         metrics:
             prometheus:
                 address: "http://a0179abbebc504fe1a02cc2868d10d20-1436141555.us-east-2.elb.amazonaws.com:9090/"

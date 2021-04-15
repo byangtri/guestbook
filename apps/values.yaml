@@ -8,14 +8,14 @@ project: 'default'
 repo: 'https://github.com/byangtri/guestbook.git'
 
 #ConfigMap and Secret resources in this directory
-common: .common
+# common: .common
 
 # these are cluster addresses
 clusters:
   stage: https://kubernetes.default.svc
   prod-1: https://myakscluster-a5a0451f.hcp.eastus.azmk8s.io:443
 
-# groups describe deployment clusters of each app
+# groups describe deployment clusters of each app in Argo CD Projects
 groups:
   stage: ['stage']
   prod: ['prod-1']
