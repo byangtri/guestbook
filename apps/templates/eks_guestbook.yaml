@@ -4,7 +4,7 @@ metadata:
   name: guestbook-staging
   # You'll usually want to add your resources to the argocd namespace.
   namespace: argocd
-  # Add a this finalizer ONLY if you want these to cascade delete.
+  # Add this finalizer ONLY if you want these to cascade delete.
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -33,3 +33,7 @@ spec:
           prometheus:
             address: "http://a0179abbebc504fe1a02cc2868d10d20-1436141555.us-east-2.elb.amazonaws.com:9090/"
             query: rate(nginx_ingress_controller_requests{ingress="guestbook-staging-helm-guestbook", controller_class="nginx",exported_namespace="guestbook-staging-helm-guestbook",status=~"[2].*"}[1h])
+  # Sync policy
+  syncPolicy:
+    automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
+      prune: false # Specifies if resources should be pruned during auto-syncing ( false by default ).

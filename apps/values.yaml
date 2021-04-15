@@ -1,10 +1,11 @@
 # Default values for apps.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+# https://argoproj.github.io/argo-cd/operator-manual/application.yaml
 
 # change with caution
 project: 'default'
-# namespace: 'seller-ads'
+# namespace: 'argocd'
 repo: 'https://github.com/byangtri/guestbook.git'
 
 #ConfigMap and Secret resources in this directory
