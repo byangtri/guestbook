@@ -10,7 +10,7 @@ metadata:
 spec:
   # Destination cluster and namespace to deploy the application
   destination:
-    server: {{ .Values.clusters.prod-1 }}
+    server: {{ .Values.clusters.prod1 }}
   project: {{ .Values.project }}
   # Source of the application manifests
   source:
