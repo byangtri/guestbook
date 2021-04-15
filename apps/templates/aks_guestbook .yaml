@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: guestbook-staging
+  name: guestbook-staging2
   # You'll usually want to add your resources to the argocd namespace.
   namespace: argocd
   # Add a this finalizer ONLY if you want these to cascade delete.
@@ -24,12 +24,12 @@ spec:
           repository: gcr.io/heptio-images/ks-guestbook-demo
           tag: 0.1
         ingress:
-          host: guestbook.18.189.211.195.nip.io
+          host: guestbook.52.255.162.155.nip.io
           canary:
             annotations:
               canary-by-header: tenantID
               canary-by-header-pattern: 10|11|12|13 # tenantID values
         metrics:
           prometheus:
-            address: "http://a0179abbebc504fe1a02cc2868d10d20-1436141555.us-east-2.elb.amazonaws.com:9090/"
-            query: rate(nginx_ingress_controller_requests{ingress="guestbook-staging-helm-guestbook", controller_class="nginx",exported_namespace="guestbook-staging-helm-guestbook",status=~"[2].*"}[1h])
+            address: "http://52.149.216.245:9090"
+            query: rate(nginx_ingress_controller_requests{ingress="guestbook-staging2-helm-guestbook", controller_class="nginx",exported_namespace="guestbook-staging2-helm-guestbook",status=~"[2].*"}[1h])
