@@ -34,7 +34,8 @@ ingress:
 metrics:
   prometheus:
     address: "http://a0179abbebc504fe1a02cc2868d10d20-1436141555.us-east-2.elb.amazonaws.com:9090/"
-
+    query: "|
+      rate(nginx_ingress_controller_requests{ingress="eks-guestbook-helm-guestbook", controller_class="nginx",exported_namespace="eks-guestbook-helm-guestbook",status=~"[2].*"}[1h])"
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little

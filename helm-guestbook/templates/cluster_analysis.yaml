@@ -12,5 +12,4 @@ spec:
     provider:
       prometheus:
         address: {{ .Values.metrics.prometheus.address }}
-        query: |
-          rate(nginx_ingress_controller_requests{ingress="eks-guestbook-helm-guestbook", controller_class="nginx",exported_namespace="eks-guestbook-helm-guestbook",status=~"[2].*"}[1h])
+        query: {{ .Values.metrics.prometheus.query }}

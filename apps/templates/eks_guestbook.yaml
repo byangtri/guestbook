@@ -17,3 +17,13 @@ spec:
     path: {{ .Values.applications.guestbook.path }}
     repoURL: {{ .Values.repo }}
     targetRevision: {{ .Values.applications.guestbook.target }}
+    helm:
+      # Values file as block file
+      values: |
+        ingress:
+            host: guestbook.18.223.163.42.nip.io
+        metrics:
+            prometheus:
+                address: "http://a0179abbebc504fe1a02cc2868d10d20-1436141555.us-east-2.elb.amazonaws.com:9090/"
+        query: "|
+            rate(nginx_ingress_controller_requests{ingress="eks-guestbook-helm-guestbook", controller_class="nginx",exported_namespace="eks-guestbook-helm-guestbook",status=~"[2].*"}[1h])"
