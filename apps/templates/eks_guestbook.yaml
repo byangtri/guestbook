@@ -25,7 +25,7 @@ spec:
             litmuschaos.io/chaos="true"
         image:
           repository: gcr.io/heptio-images/ks-guestbook-demo
-          tag: 0.1
+          tag: 0.2
         ingress:
           host: guestbook.18.189.211.195.nip.io
           canary:
