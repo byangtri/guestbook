@@ -20,6 +20,9 @@ spec:
     helm:
       # Values file as block file
       values: |
+        deployment:
+          annotations:
+            litmuschaos.io/chaos="true"
         image:
           repository: gcr.io/heptio-images/ks-guestbook-demo
           tag: 0.1

@@ -3,6 +3,10 @@ kind: Rollout
 metadata:
   name: {{ template "helm-guestbook.fullname" . }}
   namespace: {{ template "helm-guestbook.fullname" . }}
+  {{- with .Values.deployment.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     app: {{ template "helm-guestbook.name" . }}
     chart: {{ template "helm-guestbook.chart" . }}

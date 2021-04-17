@@ -13,6 +13,10 @@ service:
   type: NodePort
   port: 80
 
+deployment:
+  annotations:
+    litmuschaos.io/chaos="false"
+
 ingress:
   enabled: true
   annotations: 
