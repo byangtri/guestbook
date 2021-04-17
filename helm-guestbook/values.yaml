@@ -15,7 +15,7 @@ service:
 
 deployment:
   annotations:
-    litmuschaos.io/chaos="false"
+    litmuschaos.io/chaos: "false"
 
 ingress:
   enabled: true
