@@ -22,7 +22,7 @@ spec:
       values: |
         deployment:
           annotations:
-            litmuschaos.io/chaos="true"
+            litmuschaos.io/chaos: "true"
         image:
           repository: gcr.io/heptio-images/ks-guestbook-demo
           tag: 0.2
