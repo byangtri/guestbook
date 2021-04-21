@@ -2,10 +2,10 @@ apiVersion: argoproj.io/v1alpha1
 kind: WorkflowEventBinding
 metadata:
   name: event-chaos
-  namespace: litmus
 spec:
   event:
-    selector: payload.message != "" && metadata["x-github-event"] = ["push"]
+    # selector: payload.message != "" && metadata["x-github-event"] = ["push"]
+    selector: metadata["x-github-event"] != nil
   submit:
     workflowTemplateRef:
       name: argowf-chaos-jf7ll

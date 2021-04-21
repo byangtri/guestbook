@@ -1,0 +1,22 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: argo-workflows-webhook-clients
+# The data keys must be the name of a service account.
+stringData:
+  # https://support.atlassian.com/bitbucket-cloud/docs/manage-webhooks/
+  bitbucket.org: |
+    type: bitbucket
+    secret: "my-uuid"
+  # https://confluence.atlassian.com/bitbucketserver/managing-webhooks-in-bitbucket-server-938025878.html
+  bitbucketserver: |
+    type: bitbucketserver
+    secret: "shh!"
+  # https://developer.github.com/webhooks/securing/
+  github: |
+    type: github
+    secret: "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjdiemVOUXZGSkVzNlU5T19tQ2JIY3h0Z2Q5SmVIOFl6UEJYTFJ5YWlNamsifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJhcmdvIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImdpdGh1Yi10b2tlbi1ncjRjbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJnaXRodWIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI5ZDQ0YjJkMy1hZDY3LTRiZjctYjdjZC1kZDVhYzQ0NDc5OTYiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6YXJnbzpnaXRodWIifQ.SKbPqBS7rriBmK8AJeHWXsgAk8AieihNrnFBJ6MJZoXGpi0g3LQ5_Tq8uNhBVyxYzgg4NkVUFmbDmq3gnmy7bIo5eAeJTsDWGHenU2CY6OdJA9ldTLTLnCgRrtNqKCQkEGb_NsT3sLA0kHZ3QzQxn69WF_KdVE8PEgjUncS7FZ7qvcBLuJ4BDwx-XW1-279s0yad16hgAlon-P6gvrHFDF_vGusKzuQjU6eoKcBejvZl88jBPhPlPiN0dJR9Z3eWktoevTv9B1_jzPbKiZpy-4WTDboVeAIIB8RS9RbKYaFYz1VqCbnwsuI2DpDFmoEJsnq62ZCS5D2dnqacPaxMmA"
+  # https://docs.gitlab.com/ee/user/project/integrations/webhooks.html
+  gitlab.com: |
+    type: gitlab
+    secret: "shh!"
