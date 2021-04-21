@@ -1,0 +1,109 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: argowf-chaos-
+spec:
+  entrypoint: argowf-chaos
+  serviceAccountName: argo-chaos
+  arguments:
+    parameters:
+      - name: appNamespace
+        value: "guestbook-staging-helm-guestbook"
+      - name: adminModeNamespace
+        value: "litmus"
+      - name: appLabel
+        value: "helm-guestbook"
+  templates:
+    - name: argowf-chaos
+      steps:
+        - - name: run-benchmark
+            template: run-benchmark
+          - name: run-chaos
+            template: run-chaos
+        - - name: revert-chaos
+            template: revert-chaos
+
+    - name: run-chaos
+      inputs:
+        artifacts:
+        - name: run-chaos
+          path: /tmp/chaosengine.yaml
+          raw:
+            data: |
+              apiVersion: litmuschaos.io/v1alpha1
+              kind: ChaosEngine
+              metadata:
+                name: guestbook-staging-helm-guestbook-chaos
+                namespace: {{workflow.parameters.adminModeNamespace}}
+              spec:
+                appinfo:
+                  appns: {{workflow.parameters.appNamespace}}
+                  applabel: "app={{workflow.parameters.appLabel}}"
+                  appkind: rollout
+                jobCleanUpPolicy: retain
+                monitoring: false
+                annotationCheck: 'true'
+                engineState: 'active'
+                chaosServiceAccount: litmus-admin
+                experiments:
+                  - name: pod-delete
+                    spec:
+                      components:
+                        env:
+                          - name: TOTAL_CHAOS_DURATION
+                            value: "30"
+                          - name: CHAOS_INTERVAL
+                            value: "10"
+                          - name: FORCE
+                            value: "false"
+      container:
+        image: lachlanevenson/k8s-kubectl
+        command: [sh, -c]
+        args: ['kubectl apply -f /tmp/chaosengine.yaml -n {{workflow.parameters.adminModeNamespace}} | echo "sleeping for 120s" | sleep 120 ']
+
+    - name: run-benchmark
+      inputs:
+        artifacts:
+        - name: run-benchmark
+          path: /tmp/bench.yaml
+          raw:
+            data: |
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                labels:
+                  app: guestbook-staging-helm-guestbook-bench
+                generateName: guestbook-staging-helm-guestbook-bench-
+              spec:
+                template:
+                  metadata:
+                    labels:
+                      app: guestbook-staging-helm-guestbook-bench
+                  spec:
+                    restartPolicy: Never
+                    containers:
+                    - args:
+                      - -c
+                      - /go/bin/main -r -c10 -t${BENCHMARK_DURATION} -n 10000000 http://${guestbook-staging-helm-guestbook_SVC_NAME}:${guestbook-staging-helm-guestbook_PORT_NUM}/; exit 0
+                      command:
+                      - /bin/sh
+                      env:
+                        - name: guestbook-staging-helm-guestbook_SVC_NAME
+                          value: "guestbook-staging-helm-guestbook.default.svc.cluster.local"
+                        - name: guestbook-staging-helm-guestbook_PORT_NUM
+                          value: "80"
+                        - name: BENCHMARK_DURATION
+                          value: "300"
+                      image: devth/alpine-bench
+                      imagePullPolicy: Always
+                      name: guestbook-staging-helm-guestbook-bench
+      container:
+        image: lachlanevenson/k8s-kubectl
+        command: [sh, -c]
+        args: ['kubectl create -f /tmp/bench.yaml -n {{workflow.parameters.appNamespace}}']
+
+    - name: revert-chaos
+      container:
+        image: lachlanevenson/k8s-kubectl
+        command: [sh, -c]
+        args: [' sleep 20 | kubectl delete chaosengine guestbook-staging-helm-guestbook-chaos -n {{workflow.parameters.adminModeNamespace}}']
