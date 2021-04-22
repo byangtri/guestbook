@@ -31,7 +31,7 @@ spec:
           canary:
             annotations:
               canary-by-header: tenantID
-              canary-by-header-pattern: 10|11|12|13 # tenantID values
+              canary-by-header-pattern: 10|11|12|13 # tenantID value
         metrics:
           prometheus:
             address: "http://a0179abbebc504fe1a02cc2868d10d20-1436141555.us-east-2.elb.amazonaws.com:9090/"
