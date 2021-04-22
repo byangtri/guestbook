@@ -8,7 +8,7 @@ spec:
   metrics:
   - name: success-rate
 #    successCondition: isNaN(result[0]) || result[0] >= 0.10
-    successCondition: result[0] >= 0.01
+    successCondition: result[0] >= 0.001
     provider:
       prometheus:
         address: {{ .Values.metrics.prometheus.address }}
