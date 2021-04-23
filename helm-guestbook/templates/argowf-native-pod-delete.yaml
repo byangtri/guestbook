@@ -4,6 +4,7 @@ metadata:
   generateName: argowf-chaos-
   annotations:
     argocd.argoproj.io/hook: PostSync
+  namespace: {{ .Values.workflow.adminModeNamespace }}
 spec:
   entrypoint: argowf-chaos
   serviceAccountName: argo-chaos
