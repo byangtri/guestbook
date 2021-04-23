@@ -2,13 +2,15 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: argowf-chaos-
+  annotations:
+    argocd.argoproj.io/hook: PostSync
 spec:
   entrypoint: argowf-chaos
   serviceAccountName: argo-chaos
   arguments:
     parameters:
       - name: appNamespace
-        value: "guestbook-staging-helm-guestbook"
+        value: "{{ template "helm-guestbook.fullname" . }}"
       - name: adminModeNamespace
         value: "litmus"
       - name: appLabel
