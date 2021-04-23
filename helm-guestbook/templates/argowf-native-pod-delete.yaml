@@ -7,6 +7,9 @@ metadata:
   namespace: {{ .Values.workflow.adminModeNamespace }}
 spec:
   entrypoint: argowf-chaos
+  podGC:
+    # OnPodSuccess - delete pods immediately when pod is successful
+    strategy: OnPodSuccess
   serviceAccountName: argo-chaos
   templates:
     - name: argowf-chaos
