@@ -5,7 +5,7 @@ metadata:
 spec:
   event:
     # selector: payload.message != "" && metadata["x-github-event"] = ["push"]
-    selector: metadata["x-github-event"] != nil
+    selector: metadata["x-github-event"] == ["push"] && payload.message != ""
   submit:
     workflowTemplateRef:
       name: argowf-chaos-jf7ll

@@ -1,0 +1,42 @@
+# https://docs.litmuschaos.io/docs/scheduling/
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosSchedule
+metadata:
+  name: schedule-guestbook-staging-helm-guestbook
+  namespace: guestbook-staging-helm-guestbook
+spec:
+  schedule:
+    # now: true
+    repeat:
+      properties:
+         #format should be like "10m" or "2h" accordingly for minutes or hours
+        minChaosInterval: "2m"  
+  # resume or halt chaosschedule, change state to: active/halt
+  scheduleState: halt
+  engineTemplateSpec:
+    appinfo:
+      appns: 'guestbook-staging-helm-guestbook'
+      applabel: 'app=helm-guestbook'
+      appkind: 'rollout'
+    annotationCheck: 'true'
+    auxiliaryAppInfo: ''
+    chaosServiceAccount: pod-delete-sa
+    monitoring: false
+    engineState: 'active'
+    jobCleanUpPolicy: 'delete'
+    experiments:
+      - name: pod-delete
+        spec:
+          components:
+            env:
+              # set chaos duration (in sec) as desired
+              - name: TOTAL_CHAOS_DURATION
+                value: '30'
+
+              # set chaos interval (in sec) as desired
+              - name: CHAOS_INTERVAL
+                value: '10'
+
+              # pod failures without '--force' & default terminationGracePeriodSeconds
+              - name: FORCE
+                value: 'false'

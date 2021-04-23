@@ -10,7 +10,7 @@ spec:
   arguments:
     parameters:
       - name: appNamespace
-        value: "{{ template "helm-guestbook.fullname" . }}"
+        value: "guestbook-staging-helm-guestbook"
       - name: adminModeNamespace
         value: "litmus"
       - name: appLabel
