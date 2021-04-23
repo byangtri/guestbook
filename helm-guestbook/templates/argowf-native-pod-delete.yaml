@@ -7,14 +7,6 @@ metadata:
 spec:
   entrypoint: argowf-chaos
   serviceAccountName: argo-chaos
-  arguments:
-    parameters:
-      - name: appNamespace
-        value: "guestbook-staging-helm-guestbook"
-      - name: adminModeNamespace
-        value: "litmus"
-      - name: appLabel
-        value: "helm-guestbook"
   templates:
     - name: argowf-chaos
       steps:
@@ -36,11 +28,11 @@ spec:
               kind: ChaosEngine
               metadata:
                 name: guestbook-staging-helm-guestbook-chaos
-                namespace: {{workflow.parameters.adminModeNamespace}}
+                namespace: {{ .Values.workflow.adminModeNamespace }}
               spec:
                 appinfo:
-                  appns: {{workflow.parameters.appNamespace}}
-                  applabel: "app={{workflow.parameters.appLabel}}"
+                  appns: {{ template "helm-guestbook.fullname" . }}
+                  applabel: "app={{ template "helm-guestbook.name" . }}"
                   appkind: rollout
                 jobCleanUpPolicy: retain
                 monitoring: false
@@ -61,7 +53,7 @@ spec:
       container:
         image: lachlanevenson/k8s-kubectl
         command: [sh, -c]
-        args: ['kubectl apply -f /tmp/chaosengine.yaml -n {{workflow.parameters.adminModeNamespace}} | echo "sleeping for 120s" | sleep 120 ']
+        args: ['kubectl apply -f /tmp/chaosengine.yaml -n {{ .Values.workflow.adminModeNamespace }} | echo "sleeping for 120s" | sleep 120 ']
 
     - name: run-benchmark
       inputs:
@@ -102,10 +94,10 @@ spec:
       container:
         image: lachlanevenson/k8s-kubectl
         command: [sh, -c]
-        args: ['kubectl create -f /tmp/bench.yaml -n {{workflow.parameters.appNamespace}}']
+        args: ['kubectl create -f /tmp/bench.yaml -n {{ template "helm-guestbook.fullname" . }}']
 
     - name: revert-chaos
       container:
         image: lachlanevenson/k8s-kubectl
         command: [sh, -c]
-        args: [' sleep 20 | kubectl delete chaosengine guestbook-staging-helm-guestbook-chaos -n {{workflow.parameters.adminModeNamespace}}']
+        args: [' sleep 20 | kubectl delete chaosengine guestbook-staging-helm-guestbook-chaos -n {{ .Values.workflow.adminModeNamespace }}']

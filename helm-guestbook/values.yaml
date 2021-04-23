@@ -13,6 +13,9 @@ service:
   type: NodePort
   port: 80
 
+workflow:
+  adminModeNamespace: litmus
+
 deployment:
   annotations:
     litmuschaos.io/chaos: "false"
