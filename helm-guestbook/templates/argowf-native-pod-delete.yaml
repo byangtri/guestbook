@@ -20,6 +20,10 @@ spec:
             template: run-chaos
         - - name: revert-chaos
             template: revert-chaos
+        - - name: git-clone
+            template: git-clone
+        - - name: run-regression-testing
+            template: run-regression-testing
 
     - name: run-chaos
       inputs:
@@ -105,3 +109,26 @@ spec:
         image: lachlanevenson/k8s-kubectl
         command: [sh, -c]
         args: [' sleep 20 | kubectl delete chaosengine guestbook-staging-helm-guestbook-chaos -n {{ .Values.workflow.adminModeNamespace }}']
+
+    - name: git-clone
+      inputs:
+        artifacts:
+        - name: argo-source
+          path: /src
+          git: git@git.qasymphony.com:qtest/test-conductor.git
+          revision: "k8container"
+          sshPrivateKeySecret:
+            name: gitlab-test-conductor-ssh
+            key: gitlab-test-conductor-ssh
+      container:
+        image: golang:1.10
+        command: [sh, -c]
+        args: ["git status && ls && cat VERSION"]
+        workingDir: /src
+
+    - name: run-regression-testing
+      container:
+        image: postman/newman
+        command: [sh, -c]
+        args: ['sh '/postman/run.sh smoketest1'']
+        workingDir: /src/test-conductor
