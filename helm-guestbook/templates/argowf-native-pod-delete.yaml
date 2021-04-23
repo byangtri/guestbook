@@ -126,9 +126,9 @@ spec:
         args: ["git status && ls && cat VERSION"]
         workingDir: /src
 
-    - name: run-regression-testing
-      container:
-        image: postman/newman
-        command: [sh, -c]
-        args: ['sh '/postman/run.sh smoketest1'']
-        workingDir: /src/test-conductor
+    # - name: run-regression-testing
+    #   container:
+    #     image: postman/newman
+    #     command: [sh, -c]
+    #     args: ['sh '/postman/run.sh smoketest1'']
+    #     workingDir: /src/test-conductor
