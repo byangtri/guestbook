@@ -7,9 +7,9 @@ metadata:
   namespace: {{ .Values.workflow.adminModeNamespace }}
 spec:
   entrypoint: argowf-chaos
-  podGC:
-    # OnPodSuccess - delete pods immediately when pod is successful
-    strategy: OnPodSuccess
+  podGC:    # Pod GC provides the ability to delete pods automatically without deleting the workflow.
+    # OnWorkflowSuccess - delete pods when workflow is successful
+    strategy: OnWorkflowSuccess
   serviceAccountName: argo-chaos
   templates:
     - name: argowf-chaos
