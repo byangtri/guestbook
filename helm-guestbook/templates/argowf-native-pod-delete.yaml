@@ -22,8 +22,8 @@ spec:
             template: revert-chaos
         - - name: git-clone
             template: git-clone
-        - - name: run-regression-testing
-            template: run-regression-testing
+        # - - name: run-regression-testing
+        #     template: run-regression-testing
 
     - name: run-chaos
       inputs:
