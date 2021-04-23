@@ -118,8 +118,8 @@ spec:
           git: git@git.qasymphony.com:qtest/test-conductor.git
           revision: "k8container"
           sshPrivateKeySecret:
-            name: gitlab-test-conductor-ssh
-            key: gitlab-test-conductor-ssh
+            name: git-test-conductor-ssh
+            key: git-test-conductor-ssh
       container:
         image: golang:1.10
         command: [sh, -c]
