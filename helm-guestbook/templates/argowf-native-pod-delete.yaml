@@ -147,4 +147,4 @@ spec:
         command: [sh, -c]
         # args: ["sh '/postman/run.sh smoketest1'"]
         args: ["ls"]
-        workingDir: /src/test-conductor
+        workingDir: /src/
