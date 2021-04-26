@@ -110,22 +110,35 @@ spec:
         command: [sh, -c]
         args: [' sleep 20 | kubectl delete chaosengine guestbook-staging-helm-guestbook-chaos -n {{ .Values.workflow.adminModeNamespace }}']
 
+    # - name: git-clone
+    #   inputs:
+    #     artifacts:
+    #     - name: argo-source
+    #       path: /src
+    #       git: git@git.qasymphony.com:qtest/test-conductor.git
+    #       revision: "k8container"
+    #       sshPrivateKeySecret:
+    #         name: git-test-conductor-ssh
+    #         key: git-test-conductor-ssh
+    #   container:
+    #     image: golang:1.10
+    #     command: [sh, -c]
+    #     args: ["git status && ls && cat VERSION"]
+    #     workingDir: /src
+
     - name: git-clone
       inputs:
         artifacts:
         - name: argo-source
           path: /src
-          git: git@git.qasymphony.com:qtest/test-conductor.git
-          revision: "k8container"
-          sshPrivateKeySecret:
-            name: git-test-conductor-ssh
-            key: git-test-conductor-ssh
+          git:
+            repo: https://github.com/argoproj/argo-workflows.git
+            revision: "v2.1.1"
       container:
         image: golang:1.10
         command: [sh, -c]
         args: ["git status && ls && cat VERSION"]
         workingDir: /src
-
     # - name: run-regression-testing
     #   container:
     #     image: postman/newman
