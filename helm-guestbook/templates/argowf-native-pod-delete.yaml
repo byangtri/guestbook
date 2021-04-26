@@ -135,10 +135,10 @@ spec:
             repo: https://github.com/byangtri/guestbook
             revision: "HEAD"
       container:
-        image: golang:1.10
+        image: agiletrailblazers/azdo-agent:latest
         command: [sh, -c]
         args: ["git status && ls"]
-        workingDir: /src
+        workingDir: /src/test-conductor
 
     - name: run-regression-testing
       container:
