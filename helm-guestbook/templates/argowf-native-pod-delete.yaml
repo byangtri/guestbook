@@ -138,8 +138,8 @@ spec:
         image: agiletrailblazers/azdo-agent:latest
         command: [sh, -c, bash]
         # args: ["ls && sh chmod +x -R /src && sh 'run.sh smoketest1'"]
-        args: ["ls | sh 'run.sh /postman/smoketest1'"]
-        workingDir: /src/
+        args: ["sh 'run.sh /smoketest1'"]
+        workingDir: /src/postman
 
     - name: run-regression-testing
       container:
@@ -147,4 +147,4 @@ spec:
         command: [sh, -c]
         # args: ["sh '/postman/run.sh smoketest1'"]
         args: ["ls"]
-        workingDir: /src/
+        # workingDir: /src/
