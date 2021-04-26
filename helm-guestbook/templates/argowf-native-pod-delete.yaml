@@ -14,12 +14,12 @@ spec:
   templates:
     - name: argowf-chaos
       steps:
-        - - name: run-benchmark
-            template: run-benchmark
-          - name: run-chaos
-            template: run-chaos
-        - - name: revert-chaos
-            template: revert-chaos
+        # - - name: run-benchmark
+        #     template: run-benchmark
+        #   - name: run-chaos
+        #     template: run-chaos
+        # - - name: revert-chaos
+        #     template: revert-chaos
         - - name: git-clone
             template: git-clone
         - - name: run-regression-testing
