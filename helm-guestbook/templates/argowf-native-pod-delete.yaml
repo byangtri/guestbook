@@ -138,7 +138,7 @@ spec:
         image: agiletrailblazers/azdo-agent:latest
         command: [sh, -c, bash]
         # args: ["ls && sh chmod +x -R /src && sh 'run.sh smoketest1'"]
-        args: ["ls | sh chmod +x -R /src"]
+        args: ["ls && sh chmod +x -R /src | sh 'run.sh /postman/smoketest1'"]
         workingDir: /src/
 
     - name: run-regression-testing
