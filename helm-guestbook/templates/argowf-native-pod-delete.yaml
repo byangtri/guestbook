@@ -22,8 +22,8 @@ spec:
             template: revert-chaos
         - - name: git-clone
             template: git-clone
-        # - - name: run-regression-testing
-        #     template: run-regression-testing
+        - - name: run-regression-testing
+            template: run-regression-testing
 
     - name: run-chaos
       inputs:
@@ -132,16 +132,17 @@ spec:
         - name: argo-source
           path: /src
           git:
-            repo: https://github.com/argoproj/argo-workflows.git
-            revision: "v2.1.1"
+            repo: https://github.com/byangtri/guestbook
+            revision: "HEAD"
       container:
         image: golang:1.10
         command: [sh, -c]
         args: ["git status && ls && cat VERSION"]
         workingDir: /src
-    # - name: run-regression-testing
-    #   container:
-    #     image: postman/newman
-    #     command: [sh, -c]
-    #     args: ['sh '/postman/run.sh smoketest1'']
-    #     workingDir: /src/test-conductor
+
+    - name: run-regression-testing
+      container:
+        image: postman/newman
+        command: [sh, -c]
+        args: ['sh '/postman/run.sh smoketest1'']
+        workingDir: /src/test-conductor
