@@ -1,0 +1,3766 @@
+{
+	"info": {
+		"_postman_id": "4294cad5-fce5-4fac-85a1-5eb58db9e140",
+		"name": "Admin Group",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Admin Group",
+			"item": [
+				{
+					"name": "Create Custom User Group",
+					"item": [
+						{
+							"name": "Precondition ",
+							"item": [
+								{
+									"name": "200 - Precondition - Login success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "85fc367d-273b-4cbb-ad3d-8eb8b4906f4a",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set('accessToken', jsonData.access_token);",
+													"    pm.environment.set('tokenType', jsonData.token_type);",
+													"",
+													"    // Create login cookie of user",
+													"    const rawStr = CryptoJS.enc.Utf8.parse(jsonData.access_token);",
+													"    const base64 = CryptoJS.enc.Base64.stringify(rawStr);",
+													"    pm.environment.set('qtestUserCookie', 'UserContextToken=' + base64);",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Login as an assigned custom group user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "7a5bc0d5-e05b-4d65-9c14-c75b77316c15",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken2\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType2\", jsonData.token_type);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{prefixApiUser}}apiuser1@qas.com",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Login as normal user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b1ab0228-e44a-44cb-9eec-04cac56e4600",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken1\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType1\", jsonData.token_type);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{prefixApiUser}}apiuser2@qas.com",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Get user id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "67c2e6ec-62e0-4e4f-86f0-597908f9f177",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"userId\", jsonData.items[0].id);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "7ee662c0-4725-4a7f-ab02-102e398fab1e",
+												"exec": [
+													"pm.environment.set(\"username1\", pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\");",
+													"pm.environment.set(\"firstName1\", \"API\");",
+													"pm.environment.set(\"lastName1\", \"User 1\");",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/users/search?username={{username1}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"users",
+												"search"
+											],
+											"query": [
+												{
+													"key": "username",
+													"value": "{{username1}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Get user id 2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "f1d4b168-5d1b-4707-aa1a-7883264c3224",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"userId2\", jsonData.items[0].id);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "ba9a54e5-477e-4660-a8f1-01d23672b8c0",
+												"exec": [
+													"pm.environment.set(\"username2\", pm.environment.get(\"prefixApiUser\")+\"apiuser2@qas.com\");",
+													"pm.environment.set(\"firstName2\", \"API\");",
+													"pm.environment.set(\"lastName2\", \"User 2\");"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/users/search?username={{username2}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"users",
+												"search"
+											],
+											"query": [
+												{
+													"key": "username",
+													"value": "{{username2}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get authorities ",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "2b82c451-99bf-4315-ad60-2b0ba200fa1c",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    var jsonAuthor = Object.keys(jsonData);",
+													"    pm.environment.set(\"jsonAuthor\",jsonAuthor);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "b9fadd3a-48ea-4fd7-bf65-0653673599e7",
+												"exec": [
+													"// generator csrf token",
+													"var base64object = function(input) {",
+													"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+													"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+													"  return base64;",
+													"};",
+													"let uuid = require('uuid');",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());",
+													"pm.environment.set(\"csrfToken\", token); ",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}",
+												"type": "text"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/admin/user-groups/authority-to-id",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"user-groups",
+												"authority-to-id"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "Main ",
+							"item": [
+								{
+									"name": "200 - User invited to multiple custom user groups",
+									"item": [
+										{
+											"name": "Main ",
+											"item": [
+												{
+													"name": "200 - Create custom User Group - Assign user into custom group with full authorities",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"id": "db26de4a-60b1-4c99-aabc-d9f0e09496f6",
+																"exec": [
+																	"var authoritiesSeted = pm.environment.get(\"jsonAuthor\");\r",
+																	"var description = pm.environment.get(\"description\");\r",
+																	"var isEql = true;\r",
+																	"var jsonAuthor = [];\r",
+																	"const RESPONSE_CODE = 200;\r",
+																	"const result = pm.response.code === RESPONSE_CODE;\r",
+																	"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {\r",
+																	"    pm.response.to.have.status(RESPONSE_CODE);\r",
+																	"});\r",
+																	"if (result) {\r",
+																	"    //get response body\r",
+																	"    var jsonData = pm.response.json();\r",
+																	"\r",
+																	"    jsonData.authorities.forEach((authorities) => {\r",
+																	"        jsonAuthor.push(authorities.name);\r",
+																	"    });\r",
+																	"    \r",
+																	"    authoritiesSeted.forEach(element => {\r",
+																	"        if (jsonAuthor.includes(element)) {\r",
+																	"            isEql = true;\r",
+																	"        }\r",
+																	"    });\r",
+																	"    \r",
+																	"    pm.test(\"Response body contains ID property is correct \", function() {\r",
+																	"        pm.expect(jsonData.id).to.greaterThan(0);\r",
+																	"    });\r",
+																	"    pm.test(\"Name is correct\", function() {\r",
+																	"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"customGroupName2\"));\r",
+																	"    });\r",
+																	"\r",
+																	"    pm.test(\"Response data contains data of invited user : apiuser1@qas.com\", function() {\r",
+																	"        pm.expect(jsonData.users[0].userName).to.eql(pm.environment.get(\"prefixApiUser\")+`apiuser1@qas.com`);\r",
+																	"        pm.expect(jsonData.users[0].firstName).to.eql(\"API\");\r",
+																	"        pm.expect(jsonData.users[0].lastName).to.eql(\"User 1\");\r",
+																	"        pm.expect(jsonData.users[0].fullName).to.eql(\"API User 1\");\r",
+																	"        pm.expect(pm.response.text()).to.include(\"contactEmail\");\r",
+																	"    });\r",
+																	"\r",
+																	"    pm.test(\"Custom user group has full permission\", function() {\r",
+																	"        pm.expect(isEql).eql(true);\r",
+																	"    });\r",
+																	"\r",
+																	"    pm.environment.set(\"idcustomGroup2\", jsonData.id);\r",
+																	"}"
+																],
+																"type": "text/javascript"
+															}
+														},
+														{
+															"listen": "prerequest",
+															"script": {
+																"id": "40399d64-28b7-4636-a1fe-6e94cfcf93fa",
+																"exec": [
+																	"// random generator function",
+																	"function getRandomInt(min, max) {",
+																	"    min = Math.ceil(min);",
+																	"    max = Math.floor(max);",
+																	"    return Math.floor(Math.random() * (max - min)) + min;",
+																	"}",
+																	"// generate the random value",
+																	"var random = getRandomInt(100 , 999); ",
+																	"",
+																	"const profileName = \"[PM]Custom User Group\";",
+																	"pm.environment.set(\"customGroupName2\", `${profileName}${random.toString()}`);",
+																	"var getAuthorities = pm.environment.get(\"jsonAuthor\");",
+																	"var valueAuthorities = JSON.stringify(Object.values(getAuthorities));",
+																	"pm.environment.set(\"valueAuthorities\",valueAuthorities);",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"auth": {
+															"type": "noauth"
+														},
+														"method": "POST",
+														"header": [
+															{
+																"key": "Authorization",
+																"type": "text",
+																"value": "{{tokenType}} {{accessToken}}"
+															},
+															{
+																"key": "Content-Type",
+																"type": "text",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"name\": \"{{customGroupName2}}\",\n    \"user_ids\": [\n    \t{{userId}}\n    ],\n    \"authority_names\": \n    \t{{valueAuthorities}}\n}"
+														},
+														"url": {
+															"raw": "{{qtestUrl}}/api/v3/groups",
+															"host": [
+																"{{qtestUrl}}"
+															],
+															"path": [
+																"api",
+																"v3",
+																"groups"
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "200 - Create custom User Group - Assign user into custom group with some authorities",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"id": "e49d0b94-96e3-4608-ad15-4067d14b3780",
+																"exec": [
+																	"var authoritiesSeted = pm.environment.get(\"someAuthor\");\r",
+																	"var jsonAuthor = [];\r",
+																	"var isEql = false;\r",
+																	"const RESPONSE_CODE = 200;\r",
+																	"const result = pm.response.code === RESPONSE_CODE;\r",
+																	"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {\r",
+																	"    pm.response.to.have.status(RESPONSE_CODE);\r",
+																	"});\r",
+																	"if (result) {\r",
+																	"    //get response body\r",
+																	"    var jsonData = pm.response.json();\r",
+																	"\r",
+																	"    jsonData.authorities.forEach((authorities) => {\r",
+																	"        jsonAuthor.push(authorities.name);\r",
+																	"    });\r",
+																	"\r",
+																	"    authoritiesSeted.forEach(element => {\r",
+																	"        if (jsonAuthor.includes(element)) {\r",
+																	"            isEql = true;\r",
+																	"        }\r",
+																	"    });\r",
+																	"    \r",
+																	"    pm.test(\"Response body contains ID property is correct \", function() {\r",
+																	"        pm.expect(jsonData.id).to.greaterThan(0);\r",
+																	"    });\r",
+																	"\r",
+																	"    pm.test(\"Name is correct\", function() {\r",
+																	"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"customGroupName3\"));\r",
+																	"    });\r",
+																	"\r",
+																	"    pm.test(\"Response data contains data of invited user : apiuser1@qas.com\", function() {\r",
+																	"        pm.expect(jsonData.users[0].userName).to.eql(pm.environment.get(\"prefixApiUser\")+`apiuser1@qas.com`);\r",
+																	"        pm.expect(jsonData.users[0].firstName).to.eql(\"API\");\r",
+																	"        pm.expect(jsonData.users[0].lastName).to.eql(\"User 1\");\r",
+																	"        pm.expect(jsonData.users[0].fullName).to.eql(\"API User 1\");\r",
+																	"        pm.expect(pm.response.text()).to.include(\"contactEmail\");\r",
+																	"    });\r",
+																	"\r",
+																	"    pm.test(\"Custom user group has full permissions\", function() {\r",
+																	"        pm.expect(isEql).eql(true);\r",
+																	"    });\r",
+																	"\r",
+																	"    pm.environment.set(\"idcustomGroup1\", jsonData.id);\r",
+																	"}"
+																],
+																"type": "text/javascript"
+															}
+														},
+														{
+															"listen": "prerequest",
+															"script": {
+																"id": "3c6181e5-07c9-4401-b126-ce70d663b025",
+																"exec": [
+																	"// random generator function\r",
+																	"function getRandomInt(min, max) {\r",
+																	"    min = Math.ceil(min);\r",
+																	"    max = Math.floor(max);\r",
+																	"    return Math.floor(Math.random() * (max - min)) + min;\r",
+																	"}\r",
+																	"// generate the random value\r",
+																	"var random = getRandomInt(100, 999);\r",
+																	"\r",
+																	"const profileName = \"[PM]Custom User Group \";\r",
+																	"pm.environment.set(\"customGroupName3\", `${profileName}${random.toString()}`);\r",
+																	"var getAuthorities = pm.environment.get(\"jsonAuthor\");\r",
+																	"var someAuthor = [];\r",
+																	"\r",
+																	"for (var i = 0; i < getAuthorities.length; i++) {\r",
+																	"    if (i < 4) {\r",
+																	"        someAuthor.push(getAuthorities[i]);\r",
+																	"    }\r",
+																	"}\r",
+																	"var someAuthors = JSON.stringify(Object.values(someAuthor));\r",
+																	"pm.environment.set(\"someAuthor\", someAuthor);\r",
+																	"pm.environment.set(\"someAuthors\", someAuthors);"
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"auth": {
+															"type": "noauth"
+														},
+														"method": "POST",
+														"header": [
+															{
+																"key": "Authorization",
+																"type": "text",
+																"value": "{{tokenType}} {{accessToken}}"
+															},
+															{
+																"key": "Content-Type",
+																"type": "text",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"name\": \"{{customGroupName3}}\",\n    \"user_ids\": [\n    \t{{userId}}\n    ],\n    \"authority_names\": \n        {{someAuthors}}\n}"
+														},
+														"url": {
+															"raw": "{{qtestUrl}}/api/v3/groups",
+															"host": [
+																"{{qtestUrl}}"
+															],
+															"path": [
+																"api",
+																"v3",
+																"groups"
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "200 - Create custom User Group - Verify that user 1 should have both permissions of Custom user group 1 and 2",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"id": "5e9cbbf6-2317-4943-a823-0ad7eb41ff3d",
+																"exec": [
+																	"const RESPONSE_CODE = 200;\r",
+																	"\r",
+																	"const result = pm.response.code === RESPONSE_CODE;\r",
+																	"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {\r",
+																	"    pm.response.to.have.status(RESPONSE_CODE);\r",
+																	"});\r",
+																	"\r",
+																	"if (result) {\r",
+																	"    //get response body\r",
+																	"    var jsonData = pm.response.json();\r",
+																	"\r",
+																	"    var getUserId = pm.environment.get(\"userId\");\r",
+																	"    const userPermission = {\r",
+																	"        \"user_id\": getUserId,\r",
+																	"        \"create_project\": true,\r",
+																	"        \"edit_project\": true,\r",
+																	"        \"archive_project\": true,\r",
+																	"        \"list_project\": true,\r",
+																	"        \"manage_client_user\": true,\r",
+																	"        \"edit_user_profile\": true,\r",
+																	"        \"view_user_profile\": true,\r",
+																	"        \"manage_client_info\": true,\r",
+																	"        \"manage_system_conf\": true,\r",
+																	"        \"site_level_field\": true,\r",
+																	"        \"manage_user_group\": true,\r",
+																	"        \"insight_viewer\": true,\r",
+																	"        \"insight_editor\": true,\r",
+																	"        \"pulse_access\": true,\r",
+																	"        \"launch_access\": true,\r",
+																	"        \"analytics_viewer\": true,\r",
+																	"        \"analytics_designer\": true,\r",
+																	"        \"analytics_admin\": true\r",
+																	"    }\r",
+																	"\r",
+																	"    pm.test(\"User invited to multiple custom groups\", function() {\r",
+																	"        pm.expect(jsonData).to.eql(userPermission);\r",
+																	"    });\r",
+																	"}"
+																],
+																"type": "text/javascript"
+															}
+														},
+														{
+															"listen": "prerequest",
+															"script": {
+																"id": "aa1709fe-f885-4d4a-8db0-6e04ec2bbc2e",
+																"exec": [
+																	"var date = new Date();",
+																	"var date1 = date.toISOString();",
+																	"var date2 = date1.replace(/\\-/g, \"\");",
+																	"var date3 = date2.replace(/\\:/g, \"\");",
+																	"var date4 = date3.split(\".\")[0]; ",
+																	"",
+																	"const profileName = \"[PM]Custom User Group\";",
+																	"pm.environment.set(\"customGroupName2\", `${profileName}${date4}`);",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"protocolProfileBehavior": {
+														"disableBodyPruning": true
+													},
+													"request": {
+														"auth": {
+															"type": "noauth"
+														},
+														"method": "GET",
+														"header": [
+															{
+																"key": "Authorization",
+																"type": "text",
+																"value": "{{tokenType2}} {{accessToken2}}"
+															},
+															{
+																"key": "Content-Type",
+																"type": "text",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": ""
+														},
+														"url": {
+															"raw": "{{qtestUrl}}/api/v3/admin-profiles/current",
+															"host": [
+																"{{qtestUrl}}"
+															],
+															"path": [
+																"api",
+																"v3",
+																"admin-profiles",
+																"current"
+															]
+														}
+													},
+													"response": []
+												}
+											],
+											"protocolProfileBehavior": {},
+											"_postman_isSubFolder": true
+										},
+										{
+											"name": "Cleanup",
+											"item": [
+												{
+													"name": "200 - Cleanup - Delete custom user group 1",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"id": "76a0fabb-7e36-4e6b-adea-305a9d93725d",
+																"exec": [
+																	"const RESPONSE_CODE = 200;",
+																	"const result = pm.response.code === RESPONSE_CODE;",
+																	"",
+																	"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+																	"    pm.response.to.have.status(RESPONSE_CODE);",
+																	"});"
+																],
+																"type": "text/javascript"
+															}
+														},
+														{
+															"listen": "prerequest",
+															"script": {
+																"id": "18f58996-de18-4bbb-a44c-ec6d73b2c986",
+																"exec": [
+																	"// generator csrf token",
+																	"var base64object = function(input) {",
+																	"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+																	"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+																	"  return base64;",
+																	"};",
+																	"let token = \"{{$guid}}QAS\" + base64object(Date.now());",
+																	"pm.environment.set(\"csrfToken\", token); "
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "DELETE",
+														"header": [
+															{
+																"key": "Cookie",
+																"value": "{{qtestUserCookie}}"
+															},
+															{
+																"key": "X-CSRF-Token",
+																"value": "{{csrfToken}}"
+															}
+														],
+														"body": {
+															"mode": "urlencoded",
+															"urlencoded": []
+														},
+														"url": {
+															"raw": "{{qtestUrl}}/admin/user-groups/custom/{{idcustomGroup1}}",
+															"host": [
+																"{{qtestUrl}}"
+															],
+															"path": [
+																"admin",
+																"user-groups",
+																"custom",
+																"{{idcustomGroup1}}"
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "200 - Cleanup - Delete custom user group 2",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"id": "a49444e9-aee4-4fdd-877e-41707f1cbc4d",
+																"exec": [
+																	"const RESPONSE_CODE = 200;",
+																	"const result = pm.response.code === RESPONSE_CODE;",
+																	"",
+																	"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+																	"    pm.response.to.have.status(RESPONSE_CODE);",
+																	"});",
+																	"",
+																	"const clearVariable = [",
+																	"    \"idcustomGroup1\",\"idcustomGroup2\"",
+																	"];",
+																	"",
+																	"clearVariable.forEach(function(item) {",
+																	"    pm.environment.unset(item);",
+																	"});",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														},
+														{
+															"listen": "prerequest",
+															"script": {
+																"id": "f3205f78-f442-41c5-ad0b-85c0766d011a",
+																"exec": [
+																	"// generator csrf token",
+																	"var base64object = function(input) {",
+																	"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+																	"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+																	"  return base64;",
+																	"};",
+																	"let token = \"{{$guid}}QAS\" + base64object(Date.now());",
+																	"pm.environment.set(\"csrfToken\", token); "
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "DELETE",
+														"header": [
+															{
+																"key": "Cookie",
+																"value": "{{qtestUserCookie}}"
+															},
+															{
+																"key": "X-CSRF-Token",
+																"value": "{{csrfToken}}"
+															}
+														],
+														"body": {
+															"mode": "urlencoded",
+															"urlencoded": []
+														},
+														"url": {
+															"raw": "{{qtestUrl}}/admin/user-groups/custom/{{idcustomGroup2}}",
+															"host": [
+																"{{qtestUrl}}"
+															],
+															"path": [
+																"admin",
+																"user-groups",
+																"custom",
+																"{{idcustomGroup2}}"
+															]
+														}
+													},
+													"response": []
+												}
+											],
+											"protocolProfileBehavior": {},
+											"_postman_isSubFolder": true
+										}
+									],
+									"protocolProfileBehavior": {},
+									"_postman_isSubFolder": true
+								},
+								{
+									"name": "200 - Create custom User Group - Success with only name",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "a5cbdc4c-2e4c-4451-bf95-74200bbfacac",
+												"exec": [
+													"const RESPONSE_CODE = 200;\r",
+													"const result = pm.response.code === RESPONSE_CODE;\r",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {\r",
+													"    pm.response.to.have.status(RESPONSE_CODE);\r",
+													"});\r",
+													"\r",
+													"if (result) {\r",
+													"    //get response body\r",
+													"    var jsonData = pm.response.json();\r",
+													"\r",
+													"    pm.test(\"Response body returns ID property correctly \", function() {\r",
+													"        pm.expect(jsonData.id).to.greaterThan(0);\r",
+													"    });\r",
+													"    pm.test(\"Name is correct\", function() {\r",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"customGroupName1\"));\r",
+													"    });\r",
+													"    pm.test(\"Is_system is false\", function() {\r",
+													"        pm.expect(jsonData.is_system).to.eql(false);\r",
+													"    });\r",
+													"    pm.test(\"Is_default is false\", function() {\r",
+													"        pm.expect(jsonData.is_default).to.eql(false);\r",
+													"    });\r",
+													"    pm.environment.set(\"idcustomGroup1\", jsonData.id);\r",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "2a02197c-a09b-468b-b5db-15ff77d0b089",
+												"exec": [
+													"// random generator function\r",
+													"function getRandomInt(min, max) {\r",
+													"    min = Math.ceil(min);\r",
+													"    max = Math.floor(max);\r",
+													"    return Math.floor(Math.random() * (max - min)) + min;\r",
+													"}\r",
+													"// generate the random value\r",
+													"var random = getRandomInt(100, 999);\r",
+													"\r",
+													"\r",
+													"const profileName = \"[PM]Custom User Group \";\r",
+													"pm.environment.set(\"customGroupName1\", `${profileName}${random.toString()}`);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Create custom User Group - Success with is_default = true,  invite 1 user, full authority_names",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "307f9d2b-61df-4c4d-b14d-fde86c4882eb",
+												"exec": [
+													"var authoritiesSeted = pm.environment.get(\"jsonAuthor\");",
+													"var description = pm.environment.get(\"description\");",
+													"var isEql = true;",
+													"var jsonAuthor = [];",
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"if (result) {",
+													"    ",
+													"     //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    jsonData.authorities.forEach((authorities) => {",
+													"        jsonAuthor.push(authorities.name);",
+													"    });",
+													"    authoritiesSeted.forEach(element => ",
+													"    {",
+													"        if (jsonAuthor.includes(element)) {",
+													"            isEql = true;",
+													"        }",
+													"    });",
+													"    pm.test(\"Response body returns ID property correctly \", function() {",
+													"        pm.expect(jsonData.id).to.greaterThan(0);",
+													"    });",
+													"    pm.test(\"Name is correct\", function() {",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"customGroupName2\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Description is correct\", function() {",
+													"        pm.expect(jsonData.description).to.eql(description);",
+													"    });",
+													"    ",
+													"    pm.test(\"Is_system is false\", function() {",
+													"        pm.expect(jsonData.is_system).to.eql(false);",
+													"    });",
+													"    pm.test(\"Is_default is false\", function() {",
+													"        pm.expect(jsonData.is_default).to.eql(true);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data contains data of invited user : apiuser1@qas.com\", function() {",
+													"        pm.expect(jsonData.users[0].userName).to.eql(pm.environment.get(\"prefixApiUser\")+`apiuser1@qas.com`);",
+													"        pm.expect(jsonData.users[0].firstName).to.eql(\"API\");",
+													"        pm.expect(jsonData.users[0].lastName).to.eql(\"User 1\");",
+													"        pm.expect(jsonData.users[0].fullName).to.eql(\"API User 1\");",
+													"        pm.expect(pm.response.text()).to.include(\"contactEmail\");",
+													"    });",
+													"    ",
+													"    pm.test(\"Custom user group has full permission\", function() {",
+													"        pm.expect(isEql).eql(true);",
+													"    });",
+													"    ",
+													"    pm.environment.set(\"idcustomGroup2\",jsonData.id);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "6650b99b-aa7b-4f48-8408-d59d3596245c",
+												"exec": [
+													"// random generator function\r",
+													"function getRandomInt(min, max) {\r",
+													"    min = Math.ceil(min);\r",
+													"    max = Math.floor(max);\r",
+													"    return Math.floor(Math.random() * (max - min)) + min;\r",
+													"}\r",
+													"// generate the random value\r",
+													"var random = getRandomInt(100, 999);\r",
+													"\r",
+													"const profileName = \"[PM]Custom User Group\";\r",
+													"pm.environment.set(\"customGroupName2\", `${profileName}${random.toString()}`);\r",
+													"pm.environment.set(\"description\", \"This is description\");"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName2}}\",\n    \"description\": \"{{description}}\",\n    \"is_default\": true,\n    \"user_ids\": [\n    \t{{userId}}\n    ],\n    \"authority_names\": \n    \t{{valueAuthorities}}\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Create custom User Group - Success with is_default = false, invite multible users, some authority_names, description = empty",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "bc05c271-424a-43c7-b44b-b15aaff537dd",
+												"exec": [
+													"var authoritiesSeted = pm.environment.get(\"someAuthor\");",
+													"var isEql = false;",
+													"var jsonAuthor = [];",
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"if (result) {",
+													"     //get response body",
+													"    var jsonData = pm.response.json();",
+													"    jsonData.authorities.forEach((authorities) => {",
+													"        jsonAuthor.push(authorities.name);",
+													"    });",
+													"    authoritiesSeted.forEach(element => ",
+													"    {",
+													"        if (jsonAuthor.includes(element)) {",
+													"            isEql = true;",
+													"        }",
+													"    });",
+													"    pm.test(\"Response body returns ID property correctly \", function() {",
+													"        pm.expect(jsonData.id).to.greaterThan(0);",
+													"    });",
+													"    pm.test(\"Name is correct\", function() {",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"customGroupName3\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Description is empty\", function() {",
+													"        pm.expect(jsonData).to.not.have.property(\"description\");",
+													"    });",
+													"    ",
+													"    pm.test(\"Is_system is false\", function() {",
+													"        pm.expect(jsonData.is_system).to.eql(false);",
+													"    });",
+													"    pm.test(\"Is_default is false\", function() {",
+													"        pm.expect(jsonData.is_default).to.eql(false);",
+													"    });",
+													"    ",
+													"    jsonData.users.forEach((users) => {",
+													"        if(users.userName == pm.environment.get(\"prefixApiUser\")+\"apiuser2@qas.com\"){",
+													"            pm.test(\"Response data contains data of invited user : apiuser2@qas.com\", function() {",
+													"            pm.expect(users.userName).to.eql(pm.environment.get(\"prefixApiUser\")+\"apiuser2@qas.com\");",
+													"            pm.expect(users.firstName).to.eql(\"API\");",
+													"            pm.expect(users.lastName).to.eql(\"User 2\");",
+													"            pm.expect(users.fullName).to.eql(\"API User 2\");",
+													"            pm.expect(users).to.have.property(\"contactEmail\");",
+													"            });",
+													"        }",
+													"        if(users.userName == pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\"){",
+													"            pm.test(\"Response data contains data of invited user : apiuser1@qas.com\", function() {",
+													"            pm.expect(users.userName).to.eql(pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\");",
+													"            pm.expect(users.firstName).to.eql(\"API\");",
+													"            pm.expect(users.lastName).to.eql(\"User 1\");",
+													"            pm.expect(users.fullName).to.eql(\"API User 1\");",
+													"            pm.expect(users).to.have.property(\"contactEmail\");",
+													"            });",
+													"        }",
+													"    });",
+													"    ",
+													"    pm.test(\"Custom user group has some permissions\", function() {",
+													"        pm.expect(isEql).eql(true);",
+													"    });",
+													"    ",
+													"    pm.environment.set(\"idcustomGroup3\",jsonData.id);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "8b813e1e-dbf6-494e-b0e6-1499d7f14047",
+												"exec": [
+													"// random generator function\r",
+													"function getRandomInt(min, max) {\r",
+													"    min = Math.ceil(min);\r",
+													"    max = Math.floor(max);\r",
+													"    return Math.floor(Math.random() * (max - min)) + min;\r",
+													"}\r",
+													"// generate the random value\r",
+													"var random = getRandomInt(100, 999);\r",
+													"\r",
+													"const profileName = \"[PM]Custom User Group\";\r",
+													"pm.environment.set(\"customGroupName3\", `${profileName}${random.toString()}`);\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName3}}\",\n    \"description\": \"\",\n    \"is_default\": false,\n    \"user_ids\": [\n    \t{{userId}},{{userId2}}\n    ],\n    \"authority_names\": \n        {{someAuthors}}\n    \n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Create custom User Group - Success with user_id = empty, authority_names = empty",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "f2f35e30-441a-47f8-a329-cba5d4b0f982",
+												"exec": [
+													"var description = pm.environment.get(\"description\");",
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"if (result) {",
+													"     //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response body returns ID property correctly \", function() {",
+													"        pm.expect(jsonData.id).to.greaterThan(0);",
+													"    });",
+													"    pm.test(\"Name is correct\", function() {",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"customGroupName4\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Description is correct\", function() {",
+													"        pm.expect(jsonData.description).to.eql(description);",
+													"    });",
+													"    ",
+													"    pm.test(\"Is_system is false\", function() {",
+													"        pm.expect(jsonData.is_system).to.eql(false);",
+													"    });",
+													"    pm.test(\"Is_default is false\", function() {",
+													"        pm.expect(jsonData.is_default).to.eql(false);",
+													"    });",
+													"    pm.test(\"Response body does not contain user id property\", function() {",
+													"        pm.expect(jsonData).to.not.have.property(\"users\");",
+													"    });",
+													"    pm.test(\"Response body does not contain authorities property\", function() {",
+													"        pm.expect(jsonData).to.not.have.property(\"authorities\");",
+													"    });",
+													"    pm.environment.set(\"idcustomGroup4\",jsonData.id);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "d3f5f219-14fa-47dd-b713-9146a039c2f0",
+												"exec": [
+													"// random generator function",
+													"function getRandomInt(min, max) {",
+													"    min = Math.ceil(min);",
+													"    max = Math.floor(max);",
+													"    return Math.floor(Math.random() * (max - min)) + min;",
+													"}",
+													"// generate the random value",
+													"var random = getRandomInt(100 , 999); ",
+													"const profileName = \"[PM]Custom User Group\";",
+													"pm.environment.set(\"customGroupName4\", `${profileName}${random.toString()}`);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName4}}\",\n    \"description\": \"{{description}}\",\n    \"is_default\": false,\n    \"user_ids\": [\n    ],\n    \"authority_names\": [\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "400 - Create custom User Group - Empty name property",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "a2320cbc-6ddc-4c16-9faf-31f3cf05ff6a",
+												"exec": [
+													"const RESPONSE_CODE = 400;",
+													"const EXPECTED_MSG = 'Name of User Group should not be empty';",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"",
+													"    pm.test(`Response body has 'message' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.message).to.contains(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "69ca81e6-0868-486b-acbd-6359655200c8",
+												"exec": [
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "400 - Create custom User Group - Without name property",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "54d7503f-e685-4f21-bc33-6edffb021c9a",
+												"exec": [
+													"const RESPONSE_CODE = 400;",
+													"const EXPECTED_MSG = 'Name of User Group should not be empty';",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"",
+													"    pm.test(`Response body has 'message' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.message).to.contains(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "ebd24eb2-c53c-4d02-86e4-6f523577af32",
+												"exec": [
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\n    \"description\": \"{{description}}\",\n    \"is_default\": true,\n    \"user_ids\": [\n    \t{{userId}}\n    ],\n    \"authority_names\": \n    \t{{valueAuthorities}}\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "400 - Create custom User Group - Duplicate name",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "fcbfe17d-beac-4119-b0b1-0837ff44f6f8",
+												"exec": [
+													"const RESPONSE_CODE = 400;",
+													"const EXPECTED_MSG = 'User Groups cannot share the same name';",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"",
+													"    pm.test(`Response body has 'message' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.message).to.contains(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "89cb609b-eb4f-4e0e-92a3-525697e56b67",
+												"exec": [
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "400 - Create custom User Group - unexisting user id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c3939238-4ad7-44ec-8d20-6e30cf8364b3",
+												"exec": [
+													"const RESPONSE_CODE = 400;",
+													"const EXPECTED_MSG = 'Users are invalid';",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"",
+													"    pm.test(`Response body has 'message' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.message).to.contains(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "3384fe41-d8b7-4203-bcd3-8c9beeedf599",
+												"exec": [
+													"// random generator function",
+													"function getRandomInt(min, max) {",
+													"    min = Math.ceil(min);",
+													"    max = Math.floor(max);",
+													"    return Math.floor(Math.random() * (max - min)) + min;",
+													"}",
+													"// generate the random value",
+													"var random = getRandomInt(100 , 999);",
+													"",
+													"const profileName = \"[PM]Custom User Group\";",
+													"pm.environment.set(\"customGroupName2\", `${profileName}${random.toString()}`);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName2}}\",\n    \"user_ids\": [\n    \t\"{{userId}}111\"\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "400 - Create custom User Group - invalid user id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "552ce99b-b792-4bdd-a83b-5fd1474c03b7",
+												"exec": [
+													"const RESPONSE_CODE = 400;",
+													"const EXPECTED_MSG =`Cannot deserialize value of type \\`java.lang.Long\\` from String \\\"${pm.environment.get(\"userId\")}abc\\\": not a valid Long value`;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"",
+													"    pm.test(`Response body has 'message' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.message).to.contains(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5ff0faf0-24b9-49e7-99be-eb6f95d7f494",
+												"exec": [
+													"",
+													"// random generator function",
+													"function getRandomInt(min, max) {",
+													"    min = Math.ceil(min);",
+													"    max = Math.floor(max);",
+													"    return Math.floor(Math.random() * (max - min)) + min;",
+													"}",
+													"// generate the random value",
+													"var random = getRandomInt(100 , 999);",
+													"",
+													"const profileName = \"[PM]Custom User Group\";",
+													"pm.environment.set(\"customGroupName2\", `${profileName}${random.toString()}`);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName2}}\",\n    \"user_ids\": [\n    \t\"{{userId}}abc\"\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "400 - Create custom User Group - unexisting value of authority_names",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "24842869-9cca-463a-9766-d4d36cb5fc2e",
+												"exec": [
+													"const RESPONSE_CODE = 400;",
+													"const EXPECTED_MSG =`Authorities are invalid`;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"",
+													"",
+													"    pm.test(`Response body has 'message' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.message).to.contains(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "e913500d-67bf-434a-9425-6b966ccc421b",
+												"exec": [
+													"",
+													"// random generator function",
+													"function getRandomInt(min, max) {",
+													"    min = Math.ceil(min);",
+													"    max = Math.floor(max);",
+													"    return Math.floor(Math.random() * (max - min)) + min;",
+													"}",
+													"// generate the random value",
+													"var random = getRandomInt(100 , 999);",
+													"",
+													"const profileName = \"[PM]Custom User Group\";",
+													"pm.environment.set(\"customGroupName2\", `${profileName}${random.toString()}`);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName2}}\",\n    \"authority_names\": [\n        \"ROLE_PROJECTCREATORAAAAAAAAAAAAAAAAAAA\"\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "401 - Create custom User Group - Invalid access token",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "d459991a-5f35-41fc-815d-7e3db44d70dd",
+												"exec": [
+													"const RESPONSE_CODE = 401;",
+													"const EXPECTED_MSG = 'invalid_token';",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"",
+													"",
+													"    pm.test(`Response body has 'error' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.error).to.contains(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "33c5287d-d307-48e0-b281-b8d8cbb1a681",
+												"exec": [
+													"// random generator function",
+													"function getRandomInt(min, max) {",
+													"    min = Math.ceil(min);",
+													"    max = Math.floor(max);",
+													"    return Math.floor(Math.random() * (max - min)) + min;",
+													"}",
+													"// generate the random value",
+													"var random = getRandomInt(100 , 999);",
+													"",
+													"const profileName = \"[PM]Custom User Group\";",
+													"pm.environment.set(\"customGroupName2\", `${profileName}${random.toString()}`);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}111"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName2}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "403 - Create custom User Group - User does not have permission",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b25eb4f0-5aa1-4d3b-948e-f564710d69b6",
+												"exec": [
+													"const RESPONSE_CODE = 403;",
+													"const EXPECTED_MSG = \"You do not have permission to create UserGroup\";",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"    pm.test(`Response body has 'error' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.message).to.contains(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "a7a94f60-3cef-4c97-b80c-21d8ab680b6e",
+												"exec": [
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType1}} {{accessToken1}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName2}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "Clean up",
+							"item": [
+								{
+									"name": "200 - Cleanup - Delete custom user group 1",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "ede2dc3c-9552-4576-a904-ad90e368908d",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "f2b36f1e-0f8e-40d9-9da1-464dc3096b25",
+												"exec": [
+													"// generator csrf token",
+													"var base64object = function(input) {",
+													"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+													"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+													"  return base64;",
+													"};",
+													"let uuid = require('uuid');",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": []
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/user-groups/custom/{{idcustomGroup1}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"user-groups",
+												"custom",
+												"{{idcustomGroup1}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete custom user group 2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "bde2020b-84eb-4a24-ac61-875b678d5994",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "f3dbf10f-1add-4fa6-8b30-27dc89f26cfa",
+												"exec": [
+													"// generator csrf token",
+													"var base64object = function(input) {",
+													"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+													"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+													"  return base64;",
+													"};",
+													"let uuid = require('uuid');",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());",
+													"pm.environment.set(\"csrfToken\", token); "
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": []
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/user-groups/custom/{{idcustomGroup2}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"user-groups",
+												"custom",
+												"{{idcustomGroup2}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete custom user group 3",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "ac8c64e5-77db-4250-87fa-0403687d1db2",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "7da731bf-4d74-4549-a3bc-ee0ae699ef0c",
+												"exec": [
+													"// generator csrf token",
+													"var base64object = function(input) {",
+													"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+													"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+													"  return base64;",
+													"};",
+													"let uuid = require('uuid');",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());",
+													"pm.environment.set(\"csrfToken\", token); "
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": []
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/user-groups/custom/{{idcustomGroup3}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"user-groups",
+												"custom",
+												"{{idcustomGroup3}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete custom user group 4",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "24444d76-2c89-4533-b0c7-cacf57df5123",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c895901c-2077-4e6c-889d-a9f6be59f0fe",
+												"exec": [
+													"// generator csrf token",
+													"var base64object = function(input) {",
+													"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+													"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+													"  return base64;",
+													"};",
+													"let uuid = require('uuid');",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());",
+													"pm.environment.set(\"csrfToken\", token); "
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": []
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/user-groups/custom/{{idcustomGroup4}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"user-groups",
+												"custom",
+												"{{idcustomGroup4}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Logout success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "adf83e84-4efa-40ce-865a-2b0faa9440b4",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"const clearVariable = [",
+													"    \"customGroupName1\",\"accessToken\",\"csrfToken\",\"qtestUserCookie\",\"tokenType\",\"accessToken1\",\"tokenType1\",\"accessToken2\",\"tokenType2\",\"firstName1\",\"lastName1\",\"username1\",\"userId\",\"firstName2\",\"lastName2\",\"username2\",\"userId2\",\"idcustomGroup1\",\"csrfToken\",\"nameGreater500\",\"idcustomGroup4\",\"customGroupName4\",\"idcustomGroup3\",\"idcustomGroup2\",\"description\",\"someAuthors\",\"someAuthor\",\"customGroupName3\",\"valueAuthorities\",\"customGroupName2\",\"jsonAuthor\",\"customGroupName2\"",
+													"];",
+													"",
+													"clearVariable.forEach(function(item) {",
+													"    pm.environment.unset(item);",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "e0e3c677-747b-41ea-8ea2-d1ef3cf373ad",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/revoke",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"revoke"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Get multiple UserGroups",
+					"item": [
+						{
+							"name": "Precondition",
+							"item": [
+								{
+									"name": "200 - Precondition - Login success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "84e3433e-8a56-49b9-bfbd-9b0ce77ad64a",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set('accessToken', jsonData.access_token);",
+													"    pm.environment.set('tokenType', jsonData.token_type);",
+													"",
+													"    // Create login cookie of user",
+													"    const rawStr = CryptoJS.enc.Utf8.parse(jsonData.access_token);",
+													"    const base64 = CryptoJS.enc.Base64.stringify(rawStr);",
+													"    pm.environment.set('qtestUserCookie', 'UserContextToken=' + base64);",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Get user 1 id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "e535873b-23d2-448a-b973-9e26ecd7f6d1",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"userId\", jsonData.items[0].id);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "640b9867-bf69-420f-9398-95bef7c6ba28",
+												"exec": [
+													"pm.environment.set(\"username1\", pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\");",
+													"pm.environment.set(\"firstName1\", \"API\");",
+													"pm.environment.set(\"lastName1\", \"User 1\");",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/users/search?username={{username1}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"users",
+												"search"
+											],
+											"query": [
+												{
+													"key": "username",
+													"value": "{{username1}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Get user 2 id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "e97bb91a-4c3f-4efe-ab3e-9b3d26c4c886",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"userId2\", jsonData.items[0].id);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "e119555d-d18a-4dd2-90d0-01f46407e944",
+												"exec": [
+													"pm.environment.set(\"username2\", pm.environment.get(\"prefixApiUser\")+\"apiuser2@qas.com\");",
+													"pm.environment.set(\"firstName2\", \"API\");",
+													"pm.environment.set(\"lastName2\", \"User 2\");"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/users/search?username={{username2}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"users",
+												"search"
+											],
+											"query": [
+												{
+													"key": "username",
+													"value": "{{username2}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get authorities",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "639c1345-c9e7-491a-80a1-f6f3cfde0760",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    var jsonAuthor = Object.keys(jsonData);",
+													"    pm.environment.set(\"jsonAuthor\",jsonAuthor);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "2c2199a4-ee6c-4722-9f37-6ec254cd65e6",
+												"exec": [
+													"// generator csrf token",
+													"var base64object = function(input) {",
+													"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+													"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+													"  return base64;",
+													"};",
+													"let uuid = require('uuid');",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());",
+													"pm.environment.set(\"csrfToken\", token); "
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}",
+												"type": "text"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/admin/user-groups/authority-to-id",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"user-groups",
+												"authority-to-id"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Create custom User Group with full authority_names",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c522c616-8d8d-4350-ae8a-66e607d68143",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"idcustomGroup1\",jsonData.id);",
+													"    pm.environment.set(\"totalcustomGroup1\",jsonData.users.length);",
+													"    pm.environment.set(\"informcustomGroup1\",jsonData);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "1d39e755-6209-4e37-9058-d0f79c572189",
+												"exec": [
+													"// random generator function",
+													"function getRandomInt(min, max) {",
+													"    min = Math.ceil(min);",
+													"    max = Math.floor(max);",
+													"    return Math.floor(Math.random() * (max - min)) + min;",
+													"}",
+													"// generate the random value",
+													"var random = getRandomInt(100 , 999);",
+													"const profileName = \"[PM]Custom User Group\";",
+													"pm.environment.set(\"customGroupName2\", `${profileName}${random.toString()}`);",
+													"pm.environment.set(\"description\", \"This is description\");",
+													"var getAuthorities = pm.environment.get(\"jsonAuthor\");",
+													"var valueAuthorities = JSON.stringify(Object.values(getAuthorities));",
+													"pm.environment.set(\"valueAuthorities\",valueAuthorities);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName2}}\",\n    \"description\": \"{{description}}\",\n    \"is_default\": true,\n    \"user_ids\": [\n    \t{{userId}}\n    ],\n    \"authority_names\": \n    \t{{valueAuthorities}}\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Create custom User Group with no authority_names",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "ae4845b4-df61-4eff-b96a-809fad764a36",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"if (result) {",
+													"     //get response body",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"idcustomGroup2\",jsonData.id);",
+													"    pm.environment.set(\"totalcustomGroup2\",jsonData.users.length);",
+													"    pm.environment.set(\"informcustomGroup2\",jsonData);",
+													"} "
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "13892d7a-512c-47fa-bd67-e32eabef274e",
+												"exec": [
+													"",
+													"// random generator function",
+													"function getRandomInt(min, max) {",
+													"    min = Math.ceil(min);",
+													"    max = Math.floor(max);",
+													"    return Math.floor(Math.random() * (max - min)) + min;",
+													"}",
+													"// generate the random value",
+													"var random = getRandomInt(100 , 999);",
+													"const profileName = \"[PM]Custom User Group\";",
+													"pm.environment.set(\"customGroupName3\", `${profileName}${random.toString()}`);",
+													"pm.environment.set(\"description\", \"This is description\");",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{customGroupName3}}\",\n    \"description\": \"{{description}}\",\n    \"is_default\": false,\n    \"user_ids\": [\n    \t{{userId2}}\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Login as an assigned custom group with full permission user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b2149953-6a9e-4d8a-924e-1ecc0a6e1595",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken1\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType1\", jsonData.token_type);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username1}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Login as an assigned custom group with no permission user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "95a3597d-62e5-48ee-9f04-9d85eb103f50",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken2\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType2\", jsonData.token_type);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username2}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Login as normal user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "ecefaaf5-e1f0-4ecd-9933-393098a7100a",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken3\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType3\", jsonData.token_type);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{prefixApiUser}}apiuser3@qas.com",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "Main",
+							"item": [
+								{
+									"name": "200 - Get multiple UserGroups - By site admin user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "688a13ed-84a7-4500-8566-21b2f60f8da7",
+												"exec": [
+													"const RESPONSE_CODE = 200;\r",
+													"const result = RESPONSE_CODE === pm.response.code;\r",
+													"const totalcustomGroup1 = pm.environment.get(\"totalcustomGroup1\");\r",
+													"const informcustomGroup2 = pm.environment.get(\"informcustomGroup2\");\r",
+													"const informcustomGroup1 = pm.environment.get(\"informcustomGroup1\");\r",
+													"// Implementation function Looking for an json item from json item list by expected key and value\r",
+													"function searchJSONItemFromList(jsonList, expectedKey, expectedValue) {\r",
+													"    for (let i = 0; i < jsonList.length; i++) {\r",
+													"        if (jsonList[i][expectedKey] == expectedValue) {\r",
+													"            return jsonList[i];\r",
+													"        }\r",
+													"    }\r",
+													"    return null;\r",
+													"}\r",
+													"\r",
+													"// Verify that the returned status should be 200-OK\r",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {\r",
+													"    pm.response.to.have.status(RESPONSE_CODE);\r",
+													"});\r",
+													"\r",
+													"if (result) {\r",
+													"    //get response body\r",
+													"    const jsonData = pm.response.json();\r",
+													"    const createdcustomGroup1 = searchJSONItemFromList(jsonData, \"name\", informcustomGroup1.name);\r",
+													"    pm.test(`Response data has information of project name: '${informcustomGroup1.name}' and has property user profile in response`, () => {\r",
+													"        pm.expect(createdcustomGroup1.id).to.eql(informcustomGroup1.id);\r",
+													"        pm.expect(createdcustomGroup1.description).to.eql(informcustomGroup1.description);\r",
+													"        pm.expect(createdcustomGroup1.is_system).to.eql(informcustomGroup1.is_system);\r",
+													"        pm.expect(createdcustomGroup1.is_default).to.eql(informcustomGroup1.is_default);\r",
+													"        createdcustomGroup1.authorities = createdcustomGroup1.authorities.sort((a1, a2) => {return a1.id - a2.id});\r",
+													"        informcustomGroup1.authorities = informcustomGroup1.authorities.sort((a1, a2) => {return a1.id - a2.id});\r",
+													"        pm.expect(createdcustomGroup1.authorities).to.eql(informcustomGroup1.authorities);\r",
+													"        pm.expect(createdcustomGroup1.total_user).to.eql(pm.environment.get(\"totalcustomGroup1\"));\r",
+													"    });\r",
+													"    const createdcustomGroup2 = searchJSONItemFromList(jsonData, \"name\", informcustomGroup2.name);\r",
+													"    pm.test(`Response data has information of project name: '${informcustomGroup2.name}' and has property user profile in response`, () => {\r",
+													"        pm.expect(createdcustomGroup2.id).to.eql(informcustomGroup2.id);\r",
+													"        pm.expect(createdcustomGroup2.description).to.eql(informcustomGroup2.description);\r",
+													"        pm.expect(createdcustomGroup2.is_system).to.eql(informcustomGroup2.is_system);\r",
+													"        pm.expect(createdcustomGroup2.is_default).to.eql(informcustomGroup2.is_default);\r",
+													"        pm.expect(createdcustomGroup2.total_user).to.eql(pm.environment.get(\"totalcustomGroup2\"));\r",
+													"    });\r",
+													"\r",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "889e81c9-bf5e-4d59-8637-6ddef414f221",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Get multiple UserGroups - By assigned custom group with full permission user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "34ef87b4-aba4-450d-a945-bdc6f4c741e3",
+												"exec": [
+													"const RESPONSE_CODE = 200;\r",
+													"const result = RESPONSE_CODE === pm.response.code;\r",
+													"const totalcustomGroup1 = pm.environment.get(\"totalcustomGroup1\");\r",
+													"const informcustomGroup1 = pm.environment.get(\"informcustomGroup1\");\r",
+													"\r",
+													"\r",
+													"// Implementation function Looking for an json item from json item list by expected key and value\r",
+													"function searchJSONItemFromList(jsonList, expectedKey, expectedValue) {\r",
+													"    for (let i = 0; i < jsonList.length; i++) {\r",
+													"        if (jsonList[i][expectedKey] == expectedValue) {\r",
+													"            return jsonList[i];\r",
+													"        }\r",
+													"    }\r",
+													"    return null;\r",
+													"}\r",
+													"\r",
+													"// Verify that the returned status should be 200-OK\r",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {\r",
+													"    pm.response.to.have.status(RESPONSE_CODE);\r",
+													"});\r",
+													"\r",
+													"if (result) {\r",
+													"    //get response body\r",
+													"    const jsonData = pm.response.json();\r",
+													"    const createdcustomGroup1 = searchJSONItemFromList(jsonData, \"name\", informcustomGroup1.name);\r",
+													"    pm.test(`Response data has information of project name: '${informcustomGroup1.name}' and has property user profile in response`, () => {\r",
+													"        pm.expect(createdcustomGroup1.id).to.eql(informcustomGroup1.id);\r",
+													"        pm.expect(createdcustomGroup1.description).to.eql(informcustomGroup1.description);\r",
+													"        pm.expect(createdcustomGroup1.is_system).to.eql(informcustomGroup1.is_system);\r",
+													"        pm.expect(createdcustomGroup1.is_default).to.eql(informcustomGroup1.is_default);\r",
+													"        createdcustomGroup1.authorities = createdcustomGroup1.authorities.sort((a1, a2) => {return a1.id - a2.id});\r",
+													"        informcustomGroup1.authorities = informcustomGroup1.authorities.sort((a1, a2) => {return a1.id - a2.id});\r",
+													"        pm.expect(createdcustomGroup1.authorities).to.eql(informcustomGroup1.authorities);\r",
+													"        pm.expect(createdcustomGroup1.total_user).to.eql(pm.environment.get(\"totalcustomGroup1\"));\r",
+													"    });\r",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "10568199-7b23-410c-8f54-8628b0246334",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType1}} {{accessToken1}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "403 - Get multiple UserGroups - By assigned custom group with no permission user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "d7dffa84-4eb0-4c48-98c3-ea6a2011f8f0",
+												"exec": [
+													"const RESPONSE_CODE = 403;",
+													"const EXPECTED_MSG = 'You do not have permission to get UserGroup';",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"    pm.test(`Response body has 'message' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.message).to.eql(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "7e36f70f-7b63-4452-86be-7ba8c6817bc1",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType2}} {{accessToken2}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "403 - Get multiple UserGroups - By normal user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "95884cca-be7b-4168-97ed-6c33ac6e26e3",
+												"exec": [
+													"const RESPONSE_CODE = 403;",
+													"",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"    const EXPECTED_MSG = 'You do not have permission to get UserGroup';",
+													"",
+													"    pm.test(`Response body has 'message' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.message).to.eql(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "73f6b267-9244-4f13-958b-dd59936c9281",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType3}} {{accessToken3}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "401 - Get multiple UserGroups - With invalid access token",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "3e00bf0f-ff26-466c-a568-fa3cc212a0f4",
+												"exec": [
+													"const RESPONSE_CODE = 401;",
+													"",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"    const EXPECTED_MSG = 'invalid_token';",
+													"",
+													"    pm.test(`Response body has 'error' property with value '${EXPECTED_MSG}'`, () => {",
+													"        pm.expect(jsonData.error).to.eql(EXPECTED_MSG);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "a18832b2-d8ca-4df3-b991-5f36f4f1776d",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}111"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/groups",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"groups"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "Clean up",
+							"item": [
+								{
+									"name": "200 - Cleanup - Delete custom user group 1",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c56d883d-7cf6-423b-8ab6-79ac26efa92c",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "10f7c8e4-bb4f-4403-a116-90e78afb48e7",
+												"exec": [
+													"// generator csrf token",
+													"var base64object = function(input) {",
+													"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+													"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+													"  return base64;",
+													"};",
+													"let uuid = require('uuid');",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());",
+													"pm.environment.set(\"csrfToken\", token); "
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": []
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/user-groups/custom/{{idcustomGroup1}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"user-groups",
+												"custom",
+												"{{idcustomGroup1}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete custom user group 2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "1acf40b4-e4bf-4262-9ea7-54571402c987",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "41370839-a4bb-4a59-a177-2b3086a81bac",
+												"exec": [
+													"// generator csrf token",
+													"var base64object = function(input) {",
+													"  var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+													"  var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+													"  return base64;",
+													"};",
+													"let token = \"{{$guid}}QAS\" + base64object(Date.now());",
+													"pm.environment.set(\"csrfToken\", token); "
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": []
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/user-groups/custom/{{idcustomGroup2}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"user-groups",
+												"custom",
+												"{{idcustomGroup2}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Logout success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "13527370-2638-499e-be32-6e24f713f93b",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"const clearVariable = [",
+													"    \"accessToken\",\"csrfToken\",\"qtestUserCookie\",\"tokenType\",\"accessToken1\",\"tokenType1\",\"accessToken2\",\"tokenType2\",\"accessToken3\",\"tokenType3\",\"firstName1\",\"lastName1\",\"username1\",\"userId\",\"firstName2\",\"lastName2\",\"username2\",\"userId2\",\"idcustomGroup1\",\"csrfToken\",\"customGroupName2\",\"idcustomGroup1\",\"customGroupName3\",\"idcustomGroup2\",\"accessToken1\",\"informcustomGroup1\",\"informcustomGroup2\",\"totalcustomGroup1\",\"siteAdmin\",\"totalcustomGroup2\",\"description\",\"jsonAuthor\",\"valueAuthorities\"",
+													"];",
+													"",
+													"clearVariable.forEach(function(item) {",
+													"    pm.environment.unset(item);",
+													"});",
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "790aecb2-b71f-4da7-ae62-a276caeb7735",
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/revoke",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"revoke"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "8d6a77a7-f389-4431-91a2-49f968ac24ae",
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "c0e55a89-1454-4b90-a35c-d44164f75ca3",
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

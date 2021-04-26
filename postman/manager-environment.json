@@ -1,0 +1,69 @@
+{
+  "_postman_exported_at": "2019-05-14T06:20:35.224Z",
+  "_postman_exported_using": "Postman/7.0.9",
+  "_postman_variable_scope": "environment",
+  "id": "8080ca26-e7ac-4797-9dbb-535847ef2553",
+  "name": "TEST",
+  "values": [
+    {
+      "enabled": true,
+      "key": "=============",
+      "value": "please modify data here"
+    },
+    {
+      "enabled": true,
+      "key": "qtestUrl",
+      "value": "http://qtest.cirruslabs.io/"
+    },
+    {
+      "enabled": true,
+      "key": "username",
+      "value": "nephelelocal@gmail.com"
+    },
+    {
+      "enabled": true,
+      "key": "password",
+      "value": "admin123"
+    },
+    {
+      "enabled": true,
+      "key": "firstName",
+      "value": "Postman"
+    },
+    {
+      "enabled": true,
+      "key": "lastName",
+      "value": "User 1"
+    },
+    {
+      "enabled": true,
+      "key": "serverUrl",
+      "value": "https://qas-jiradev02.atlassian.net"
+    },
+    {
+      "enabled": true,
+      "key": "externalUsername",
+      "value": "jiradev02-admin@qasymphony.com"
+    },
+    {
+      "enabled": true,
+      "key": "externalPassword",
+      "value": ""
+    },
+    {
+      "enabled": true,
+      "key": "externalToken",
+      "value": "DFWdGkB6pFmduw6eUggw6B51"
+    },
+    {
+      "enabled": true,
+      "key": "externalSystem",
+      "value": "Jira"
+    },
+    {
+      "enabled": true,
+      "key": "=============",
+      "value": "do not modify data from here"
+    }
+  ]
+}

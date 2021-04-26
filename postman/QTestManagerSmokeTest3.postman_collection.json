@@ -1,0 +1,4194 @@
+{
+	"info": {
+		"_postman_id": "0b113df3-8603-4046-8713-9c8c988fbb0b",
+		"name": "QTestManagerSmokeTest3",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SmokeTest3",
+			"item": [
+				{
+					"name": "Create a release",
+					"item": [
+						{
+							"name": "Precondition",
+							"item": [
+								{
+									"name": "200 - Precondition - Login success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code + \" -  Login\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    //assert response body",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+													"    //Encrypt",
+													"    var CryptoJS = require(\"crypto-js\");",
+													"    var rawStr = CryptoJS.enc.Utf8.parse(jsonData.access_token);",
+													"    var base64 = CryptoJS.enc.Base64.stringify(rawStr);",
+													"    pm.environment.set(\"qtestUserCookie\", \"UserContextToken=\" + base64);",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"   //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response code: \" + pm.response.code, function(){",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"    pm.test(\"Response data contains all properties of project data\", function(){",
+													"        pm.expect(pm.response.text()).to.include(\"id\");",
+													"        pm.expect(jsonData.name).to.eql(\"qTest API - Postman\");",
+													"        pm.expect(jsonData.description).to.eql(\"Description of qTest API - Postman\");",
+													"        pm.expect(pm.response.text()).to.include(\"status_id\");",
+													"        pm.expect(pm.response.text()).to.include(\"start_date\");",
+													"        pm.expect(pm.response.text()).to.include(\"end_date\");",
+													"        pm.expect(pm.response.text()).to.include(\"sample\");",
+													"        pm.expect(pm.response.text()).to.include(\"defect_tracking_systems\");",
+													"        pm.expect(pm.response.text()).to.include(\"x_explorer_access_level\");",
+													"        pm.expect(pm.response.text()).to.include(\"date_format\");",
+													"        pm.expect(jsonData.automation.toString()).to.eql(\"true\");",
+													"    });",
+													"    pm.environment.set(\"projectId\", jsonData.id);",
+													"    pm.environment.set(\"projectStartDate\", pm.environment.get(\"startDate\"));",
+													"    pm.environment.set(\"projectEndDate\", pm.environment.get(\"endDate\"));",
+													"} else {",
+													"    //other mark failed",
+													"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}",
+													""
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"var startDate = new Date();",
+													"var endDate = new Date();",
+													"endDate.setDate(startDate.getDate() + 365);",
+													"",
+													"pm.environment.set('startDate', startDate.toISOString());",
+													"pm.environment.set('endDate', endDate.toISOString());",
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"qTest API - Postman\",\n  \"description\": \"Description of qTest API - Postman\",\n  \"start_date\": \"{{startDate}}\",\n  \"end_date\": \"{{endDate}}\",\n  \"admins\": [\n    \"{{username}}\"\n  ],\n  \"automation\": true\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get release fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    const PREFIX = \"fieldIdRelease\";",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    jsonData.forEach(function(field) {",
+													"        pm.environment.set(PREFIX + field.label.replace(/\\s/g, \"\"), field.id);",
+													"        if (field.allowed_values) {",
+													"            field.allowed_values.forEach(function(item) {",
+													"                const fieldValueId = PREFIX + field.label + item.label.replace(/\\s/g, \"\");",
+													"                pm.environment.set(fieldValueId, item.value);",
+													"            });",
+													"        }",
+													"    });",
+													"} else {",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/settings/releases/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"settings",
+												"releases",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Main",
+							"item": [
+								{
+									"name": "200 - Create release - Success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"newReleaseId1\", jsonData.id);",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    pm.test(\"Repsonse body has correct release info\", function() {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"releaseName\"));",
+													"        pm.expect(jsonData.pid).to.not.eql(null);",
+													"        pm.expect(jsonData.created_date).to.not.eql(null);",
+													"        pm.expect(jsonData.last_modified_date).to.not.eql(null);",
+													"        pm.expect(jsonData.description).to.eql(pm.environment.get(\"releaseDescription\"));",
+													"        pm.expect(jsonData.note).to.eql(pm.environment.get(\"releaseNote\"));",
+													"    });",
+													"",
+													"    var tmp;",
+													"    jsonData.properties.forEach(function(field) {",
+													"        switch (field.field_name) {",
+													"            case \"Status\":",
+													"                pm.test(\"Repsonse data has release status is 'In Progress'\", function() {",
+													"                    pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdReleaseStatusInProgress\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Description\":",
+													"                pm.test(\"Repsonse data has release description '\" + field.field_value + \"'\", function() {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"releaseDescription\"));",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Release Note\":",
+													"                pm.test(\"Repsonse data has release note '\" + field.field_value + \"'\", function() {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"releaseNote\"));",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Start Date\":",
+													"                pm.test(\"Repsonse data has release start date\", function() {",
+													"                    tmp = pm.environment.get(\"startDate\").split(\"T\");",
+													"                    pm.expect(field.field_value).to.include(tmp[0]);",
+													"                });",
+													"                break;",
+													"",
+													"            case \"End Date\":",
+													"                pm.test(\"Repsonse data has release end date\", function() {",
+													"                    tmp = pm.environment.get(\"endDate\").split(\"T\");",
+													"                    pm.expect(field.field_value).to.include(tmp[0]);",
+													"                });",
+													"                break;",
+													"        }",
+													"    });",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"pm.environment.set(\"releaseName\", \"Release having full info\");",
+													"pm.environment.set(\"startDate\", (new Date()).toISOString());",
+													"pm.environment.set(\"endDate\", (new Date()).toISOString());",
+													"pm.environment.set(\"releaseDescription\", \"Description of the release\");",
+													"pm.environment.set(\"releaseNote\", \"Note of the release\");"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{releaseName}}\",\n    \"properties\": [\n    \t{\n            \"field_id\": {{fieldIdReleaseStatus}},\n            \"field_value\": \"{{fieldIdReleaseStatusInProgress}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseStartDate}},\n            \"field_value\": \"{{startDate}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseEndDate}},\n            \"field_value\": \"{{endDate}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseDescription}},\n            \"field_value\": \"{{releaseDescription}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseReleaseNote}},\n            \"field_value\": \"{{releaseNote}}\"\n        }\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/releases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"releases"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Cleanup",
+							"item": [
+								{
+									"name": "200 - Cleanup - Delete release 1",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.environment.unset(\"newReleaseId1\");",
+													"",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/releases/{{newReleaseId1}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"releases",
+												"{{newReleaseId1}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete release 2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.environment.unset(\"newReleaseId2\");",
+													"",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/releases/{{newReleaseId2}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"releases",
+												"{{newReleaseId2}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete release 3",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.environment.unset(\"newReleaseId3\");",
+													"",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/releases/{{newReleaseId3}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"releases",
+												"{{newReleaseId3}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response code: \" + pm.response.code, function(){",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.test(\"Delete project success without any errors\", function(){",
+													"        pm.expect(jsonData.hasError.toString()).to.eql(\"false\");",
+													"        pm.expect(jsonData.result.id).to.eql(pm.environment.get(\"projectId\"));",
+													"        pm.expect(jsonData.result.status).to.eql(\"Archive\");",
+													"    });",
+													"    pm.environment.unset(\"projectId\");",
+													"    pm.environment.unset(\"projectStartDate\");",
+													"    pm.environment.unset(\"projectEndDate\");",
+													"} else {",
+													"    //other mark failed",
+													"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// generator csrf token\r",
+													"var base64object = function(input) {\r",
+													" var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));\r",
+													" var base64 = CryptoJS.enc.Base64.stringify(inputWords);\r",
+													" return base64;\r",
+													"};\r",
+													"let uuid = require('uuid');\r",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());\r",
+													"pm.environment.set(\"csrfToken\", token);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "id",
+													"value": "{{projectId}}",
+													"type": "text"
+												},
+												{
+													"key": "dojo.preventCache",
+													"value": "{{csrfToken}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/proj/delete-project",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"proj",
+												"delete-project"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Logout",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Response code: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    pm.environment.unset(\"releaseName\");",
+													"    pm.environment.unset(\"startDate\");",
+													"    pm.environment.unset(\"endDate\");",
+													"    pm.environment.unset(\"releaseDescription\");",
+													"    pm.environment.unset(\"releaseNote\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatus\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatusPlanned\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatusInProgress\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatusCompleted\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatusClosed\");",
+													"    pm.environment.unset(\"fieldIdReleaseStartDate\");",
+													"    pm.environment.unset(\"fieldIdReleaseEndDate\");",
+													"    pm.environment.unset(\"fieldIdReleaseDescription\");",
+													"    pm.environment.unset(\"fieldIdReleaseReleaseNote\");",
+													"    pm.environment.unset(\"fieldIdReleaseDescription\");",
+													"    pm.environment.unset(\"fieldIdReleaseReleaseNote\");",
+													"    pm.environment.unset(\"qtestUserCookie\");",
+													"    pm.environment.unset(\"csrfToken\");",
+													"    pm.environment.unset(\"accessToken\");",
+													"    pm.environment.unset(\"tokenType\");",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/revoke",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"revoke"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Create a build",
+					"item": [
+						{
+							"name": "Precondition",
+							"item": [
+								{
+									"name": "200 - Precondition - Login success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code + \" -  Login\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    //assert response body",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+													"    ",
+													"    //Encrypt",
+													"    var CryptoJS = require(\"crypto-js\");",
+													"    var rawStr = CryptoJS.enc.Utf8.parse(jsonData.access_token);",
+													"    var base64 = CryptoJS.enc.Base64.stringify(rawStr);",
+													"    pm.environment.set(\"qtestUserCookie\", \"UserContextToken=\" + base64);",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"   //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response code: \" + pm.response.code, function(){",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"    pm.test(\"Response data contains all properties of project data\", function(){",
+													"        pm.expect(pm.response.text()).to.include(\"id\");",
+													"        pm.expect(jsonData.name).to.eql(\"qTest API - Postman\");",
+													"        pm.expect(jsonData.description).to.eql(\"Description of qTest API - Postman\");",
+													"        pm.expect(pm.response.text()).to.include(\"status_id\");",
+													"        pm.expect(pm.response.text()).to.include(\"start_date\");",
+													"        pm.expect(pm.response.text()).to.include(\"end_date\");",
+													"        pm.expect(pm.response.text()).to.include(\"sample\");",
+													"        pm.expect(pm.response.text()).to.include(\"defect_tracking_systems\");",
+													"        pm.expect(pm.response.text()).to.include(\"x_explorer_access_level\");",
+													"        pm.expect(pm.response.text()).to.include(\"date_format\");",
+													"        pm.expect(jsonData.automation.toString()).to.eql(\"true\");",
+													"    });",
+													"    pm.environment.set(\"projectId\", jsonData.id);",
+													"    pm.environment.set(\"projectStartDate\", pm.environment.get(\"startDate\"));",
+													"    pm.environment.set(\"projectEndDate\", pm.environment.get(\"endDate\"));",
+													"} else {",
+													"    //other mark failed",
+													"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}",
+													""
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"var startDate = new Date();",
+													"var endDate = new Date();",
+													"endDate.setDate(startDate.getDate() + 365);",
+													"",
+													"pm.environment.set('startDate', startDate.toISOString());",
+													"pm.environment.set('endDate', endDate.toISOString());",
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"qTest API - Postman\",\n  \"description\": \"Description of qTest API - Postman\",\n  \"start_date\": \"{{startDate}}\",\n  \"end_date\": \"{{endDate}}\",\n  \"admins\": [\n    \"{{username}}\"\n  ],\n  \"automation\": true\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get release fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    const PREFIX = \"fieldIdRelease\";",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    jsonData.forEach(function(field) {",
+													"        pm.environment.set(PREFIX + field.label.replace(/\\s/g, \"\"), field.id);",
+													"        if (field.allowed_values) {",
+													"            field.allowed_values.forEach(function(item) {",
+													"                const fieldValueId = PREFIX + field.label + item.label.replace(/\\s/g, \"\");",
+													"                pm.environment.set(fieldValueId, item.value);",
+													"            });",
+													"        }",
+													"    });",
+													"} else {",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/settings/releases/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"settings",
+												"releases",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get build fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    const PREFIX = \"fieldIdBuild\";",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    jsonData.forEach(function(field) {",
+													"        pm.environment.set(PREFIX + field.label.replace(/\\s/g, \"\"), field.id);",
+													"        if (field.allowed_values) {",
+													"            field.allowed_values.forEach(function(item) {",
+													"                const fieldValueId = PREFIX + field.label + item.label.replace(/\\s/g, \"\");",
+													"                pm.environment.set(fieldValueId, item.value);",
+													"            });",
+													"        }",
+													"    });",
+													"} else {",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/settings/builds/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"settings",
+												"builds",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Create Release",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"newReleaseId1\", jsonData.id);",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    pm.test(\"Repsonse body has correct release info\", function() {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"releaseName\"));",
+													"        pm.expect(jsonData.pid).to.not.eql(null);",
+													"        pm.expect(jsonData.created_date).to.not.eql(null);",
+													"        pm.expect(jsonData.last_modified_date).to.not.eql(null);",
+													"        pm.expect(jsonData.description).to.not.eql(null);",
+													"        pm.expect(jsonData.note).to.not.eql(null);",
+													"    });",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"releaseName\", \"Release 1\");",
+													"",
+													"var today = new Date();",
+													"pm.environment.set(\"startDate\", today.toISOString());",
+													"today.setDate(today.getDate() + 10);",
+													"pm.environment.set(\"endDate\", today.toISOString());",
+													"",
+													"pm.environment.set(\"releaseDescription\", \"Description of Release 1\");",
+													"pm.environment.set(\"releaseNote\", \"Note of Release 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{releaseName}}\",\n    \"properties\": [\n      {\n            \"field_id\": {{fieldIdReleaseStatus}},\n            \"field_value\": \"{{fieldIdReleaseStatusInProgress}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseStartDate}},\n            \"field_value\": \"{{startDate}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseEndDate}},\n            \"field_value\": \"{{endDate}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseDescription}},\n            \"field_value\": \"{{releaseDescription}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseReleaseNote}},\n            \"field_value\": \"{{releaseNote}}\"\n        }\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/releases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"releases"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Main",
+							"item": [
+								{
+									"name": "200 - Create build - Success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"newBuildId1\", jsonData.id);",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has links\", function() {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has id\", function() {",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data contains name: \" + jsonData.name, function() {",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"buildName\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has order\", function() {",
+													"        pm.expect(jsonData.order).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has pid\", function() {",
+													"        pm.expect(jsonData.pid).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has created_date\", function() {",
+													"        pm.expect(jsonData.created_date).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has last_modify_date\", function() {",
+													"        pm.expect(jsonData.last_modify_date).to.not.eql(null);",
+													"    });",
+													"",
+													"",
+													"    var tmp;",
+													"    jsonData.properties.forEach(function(field) {",
+													"        switch (field.field_name) {",
+													"            case \"Status\":",
+													"                pm.test(\"Repsonse data has build status is 'In Progress'\", function() {",
+													"                    pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdBuildStatusInProgress\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Build Date\":",
+													"                pm.test(\"Repsonse data has build date property\", function() {",
+													"                    tmp = pm.environment.get(\"buildDate\").split(\".\");",
+													"                    pm.expect(field.field_value).to.include(tmp[0]);",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Build Note\":",
+													"                pm.test(\"Repsonse data has build note '\" + field.field_value + \"'\", function() {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"buildNote\"));",
+													"                });",
+													"                break;",
+													"        }",
+													"    });",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"buildName\", \"Build 1\");",
+													"",
+													"var today = new Date();",
+													"today.setDate(today.getDate() + 1);",
+													"pm.environment.set(\"buildDate\", today.toISOString());",
+													"pm.environment.set(\"buildNote\", \"Note of Build 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{buildName}}\",\n    \"properties\": [\n    \t{\n            \"field_id\": {{fieldIdBuildStatus}},\n            \"field_value\": \"{{fieldIdBuildStatusInProgress}}\"\n        },\n        {\n            \"field_id\": {{fieldIdBuildBuildDate}},\n            \"field_value\": \"{{buildDate}}\"\n        },\n        {\n            \"field_id\": {{fieldIdBuildBuildNote}},\n            \"field_value\": \"{{buildNote}}\"\n        }\n    ],\n    \"release\": {\n    \t\"id\": \"{{newReleaseId1}}\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/builds",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"builds"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "400 - Create build - Not exist releaseId",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 400) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    pm.test(\"Status code is 400\", function() {",
+													"        pm.response.to.have.status(400);",
+													"    });",
+													"",
+													"    pm.test(\"Repsonse body has property message 'Release does not exist'\", function() {",
+													"        pm.expect(jsonData.message).to.include(\"Release does not exist\");",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(400);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"Build name is updated\",\n    \"properties\": [\n      {\n            \"field_id\": \"{{fieldIdReleaseStatus}}\",\n            \"field_value\": \"{{fieldIdReleaseStatusCompleted}}\"\n        }\n    ],\n    \"release\": {\n    \t\"id\": \"0\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/builds",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"builds"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Cleanup",
+							"item": [
+								{
+									"name": "200 - Cleanup - Delete release",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Status code is 200\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.environment.unset(\"newReleaseId1\");",
+													"",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/releases/{{newReleaseId1}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"releases",
+												"{{newReleaseId1}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response code: \" + pm.response.code, function(){",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.test(\"Delete project success without any errors\", function(){",
+													"        pm.expect(jsonData.hasError.toString()).to.eql(\"false\");",
+													"        pm.expect(jsonData.result.id).to.eql(pm.environment.get(\"projectId\"));",
+													"        pm.expect(jsonData.result.status).to.eql(\"Archive\");",
+													"    });",
+													"    pm.environment.unset(\"projectId\");",
+													"    pm.environment.unset(\"projectStartDate\");",
+													"    pm.environment.unset(\"projectEndDate\");",
+													"} else {",
+													"    //other mark failed",
+													"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// generator csrf token\r",
+													"var base64object = function(input) {\r",
+													" var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));\r",
+													" var base64 = CryptoJS.enc.Base64.stringify(inputWords);\r",
+													" return base64;\r",
+													"};\r",
+													"let uuid = require('uuid');\r",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());\r",
+													"pm.environment.set(\"csrfToken\", token);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "id",
+													"value": "{{projectId}}",
+													"type": "text"
+												},
+												{
+													"key": "dojo.preventCache",
+													"value": "{{csrfToken}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/proj/delete-project",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"proj",
+												"delete-project"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Logout",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Response code: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    pm.environment.unset(\"releaseName\");",
+													"    pm.environment.unset(\"startDate\");",
+													"    pm.environment.unset(\"endDate\");",
+													"    pm.environment.unset(\"releaseDescription\");",
+													"    pm.environment.unset(\"releaseNote\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatus\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatusPlanned\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatusInProgress\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatusCompleted\");",
+													"    pm.environment.unset(\"fieldIdReleaseStatusClosed\");",
+													"    pm.environment.unset(\"fieldIdReleaseStartDate\");",
+													"    pm.environment.unset(\"fieldIdReleaseEndDate\");",
+													"    pm.environment.unset(\"fieldIdReleaseDescription\");",
+													"    pm.environment.unset(\"fieldIdReleaseReleaseNote\");",
+													"    ",
+													"    pm.environment.unset(\"fieldIdBuildStatus\");",
+													"    pm.environment.unset(\"fieldIdBuildStatusPlanned\");",
+													"    pm.environment.unset(\"fieldIdBuildStatusInProgress\");",
+													"    pm.environment.unset(\"fieldIdBuildStatusCompleted\");",
+													"    pm.environment.unset(\"fieldIdBuildStatusClosed\");",
+													"    pm.environment.unset(\"fieldIdBuildBuildDate\");",
+													"    pm.environment.unset(\"fieldIdBuildBuildNote\");",
+													"    pm.environment.unset(\"newReleaseId1\");",
+													"    pm.environment.unset(\"newBuildId1\");",
+													"    pm.environment.unset(\"buildDate\");",
+													"    pm.environment.unset(\"buildNote\");",
+													"    pm.environment.unset(\"buildName\");",
+													"    pm.environment.unset(\"build1_name\");",
+													"    ",
+													"    pm.environment.unset(\"qtestUserCookie\");",
+													"    pm.environment.unset(\"csrfToken\");",
+													"    pm.environment.unset(\"accessToken\");",
+													"    pm.environment.unset(\"tokenType\");",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/revoke",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"revoke"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Create a test case",
+					"item": [
+						{
+							"name": "Precondition",
+							"item": [
+								{
+									"name": "200 - Precondition - Login success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code + \" -  Login\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    //assert response body",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+													"    ",
+													"    var CryptoJS = require(\"crypto-js\");",
+													"    //Encrypt",
+													"    var rawStr = CryptoJS.enc.Utf8.parse(jsonData.access_token);",
+													"    var base64 = CryptoJS.enc.Base64.stringify(rawStr);",
+													"    pm.environment.set(\"qtestUserCookie\", \"UserContextToken=\" + base64);",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Get user id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //get response body",
+													"    var jsonData = pm.response.json();",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    pm.test(\"Response data contains data of apiuser1@qas.com\", function() {",
+													"        pm.expect(jsonData.items[0].username).to.eql(pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\");",
+													"        pm.expect(pm.response.text()).to.include(\"email\");",
+													"        pm.expect(jsonData.items[0].first_name).to.eql(\"API\");",
+													"        pm.expect(jsonData.items[0].last_name).to.eql(\"User 1\");",
+													"        pm.expect(pm.response.text()).to.include(\"status\");",
+													"        pm.expect(pm.response.text()).to.include(\"timezone_offset\");",
+													"        pm.expect(pm.response.text()).to.include(\"country_name\");",
+													"    });",
+													"    ",
+													"    pm.environment.set(\"userId\", jsonData.items[0].id);",
+													"",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"pm.environment.set(\"username1\", pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\");",
+													"pm.environment.set(\"firstName1\", \"API\");",
+													"pm.environment.set(\"lastName1\", \"User 1\");",
+													"pm.environment.set(\"email1\", pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\");"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/users/search?username={{username1}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"users",
+												"search"
+											],
+											"query": [
+												{
+													"key": "username",
+													"value": "{{username1}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"   //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response code: \" + pm.response.code, function(){",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"    pm.environment.set(\"projectId\", jsonData.id);",
+													"    pm.environment.set(\"projectName\", jsonData.name);",
+													"    pm.environment.set(\"projectStartDate\", jsonData.start_date);",
+													"    pm.environment.set(\"projectEndDate\", jsonData.end_date);",
+													"    ",
+													"    pm.environment.unset(\"startDate\");",
+													"    pm.environment.unset(\"endDate\");",
+													"} else {",
+													"    //other mark failed",
+													"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}",
+													""
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"var startDate = new Date();",
+													"var endDate = new Date();",
+													"endDate.setDate(startDate.getDate() + 365);",
+													"",
+													"pm.environment.set('startDate', startDate.toISOString());",
+													"pm.environment.set('endDate', endDate.toISOString());",
+													"",
+													"// random generator function",
+													"function getRandomInt(min, max) {",
+													"    min = Math.ceil(min);",
+													"    max = Math.floor(max);",
+													"    return Math.floor(Math.random() * (max - min)) + min;",
+													"}",
+													"// generate the random value",
+													"var csrfToken = getRandomInt(10 , 99);",
+													"pm.environment.set(\"projectName\", \"API Postman Project \" + csrfToken);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{projectName}}\",\n  \"description\": \"Description of qTest API Postman\",\n  \"start_date\": \"{{startDate}}\",\n  \"end_date\": \"{{endDate}}\",\n  \"admins\": [\n    \"{{username}}\", \"{{prefixApiUser}}apiuser1@qas.com\"\n  ],\n  \"automation\": true\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Queries Users by Project Name",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    pm.test(\"Response data contains page: \" + jsonData.page, function() {",
+													"        pm.expect(jsonData.page).to.eql(1);",
+													"    });",
+													"    pm.test(\"Response data contains page size: \" + jsonData.page_size, function() {",
+													"        pm.expect(jsonData.page_size).to.eql(100);",
+													"    });",
+													"    pm.test(\"Response data contains total: \" + jsonData.total, function() {",
+													"        pm.expect(jsonData.total).to.eql(2);",
+													"    });",
+													"    pm.test(\"Response data contains total project: \" + jsonData.total_project, function() {",
+													"        pm.expect(jsonData.total_project).to.eql(1);",
+													"    });",
+													"    var assignedUser, message;",
+													"    if (jsonData.items && jsonData.items.length > 0) {",
+													"        jsonData.items.forEach(function(item, index) {",
+													"            if(item.username === pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\"){",
+													"                assignedUser = item.username;",
+													"                message = \"API User 1\";",
+													"            }",
+													"            else if(item.username === pm.environment.get(\"username\")){",
+													"                assignedUser = pm.environment.get(\"username\");",
+													"                message = \"site admin user\";",
+													"            }",
+													"            pm.test(\"Response data contains data of \" + message + \" properties\", function() {",
+													"                pm.expect(item.id).to.not.eql(null);",
+													"                pm.expect(item.username).to.eql(assignedUser);",
+													"                pm.expect(item.first_name).to.not.eql(null);",
+													"                pm.expect(item.last_name).to.not.eql(null);",
+													"                pm.expect(item.avatar).to.not.eql(null);",
+													"                item.assigned_projects.forEach(function(projectId){",
+													"                   if(projectId === pm.environment.get(\"projectId\")){",
+													"                       return false;",
+													"                   }",
+													"                });",
+													"            });",
+													"        });",
+													"    }",
+													"    ",
+													"    pm.environment.set(\"userList\", jsonData.items);",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/search/user?projectName={{projectName}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"search",
+												"user"
+											],
+											"query": [
+												{
+													"key": "projectName",
+													"value": "{{projectName}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get test case fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Status code is 200\", () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    const PREFIX = \"fieldIdTestCase\";",
+													"    var jsonData = pm.response.json();",
+													"    var userList = pm.environment.get(\"userList\");",
+													"",
+													"    var fieldValueId;",
+													"    var siteAdminFullName = pm.environment.get(\"firstName\") + \" \" + pm.environment.get(\"lastName\");",
+													"    jsonData.forEach(function(field) {",
+													"        pm.environment.set(PREFIX + field.label.replace(/[\\s\\/-]/g, \"\"), field.id);",
+													"        if (field.allowed_values) {",
+													"            field.allowed_values.forEach(function(item) {",
+													"                if (field.label === \"Assigned To\") {",
+													"                    if(item.label === \"API User 1\"){",
+													"                        fieldValueId = PREFIX + field.label.replace(/[\\s\\/-]/g, \"\") + \"APIUser1\";",
+													"                        pm.environment.set(fieldValueId, item.value);",
+													"                    }",
+													"                    else if (item.label === siteAdminFullName) {",
+													"                        fieldValueId = PREFIX + field.label.replace(/[\\s\\/-]/g, \"\") + \"SiteAdminUser\";",
+													"                        pm.environment.set(fieldValueId, item.value);",
+													"                    }",
+													"                } else {",
+													"                    fieldValueId = PREFIX + field.label.replace(/[\\s\\/-]/g, \"\") + item.label.replace(/[\\s\\/-]/g, \"\");",
+													"                    pm.environment.set(fieldValueId, item.value);",
+													"                }",
+													"            });",
+													"        }",
+													"    });",
+													"} else {",
+													"    pm.test(`Response status: ${pm.response.code} \\n Response body: ${pm.response.text()}`, () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/settings/test-cases/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"settings",
+												"test-cases",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create Module 1",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"    pm.test(\"Response status \" + pm.response.code, () => {",
+													"        pm.response.to.have.status(201); ",
+													"    });",
+													"    ",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response data has correct module properties\", () => {",
+													"        pm.expect(jsonData.links).not.to.eql(null);",
+													"        pm.expect(jsonData.id).not.to.eql(null);",
+													"        pm.expect(jsonData.name).to.eql(\"Module 1\");",
+													"        pm.expect(jsonData.order).not.to.eql(null);",
+													"        pm.expect(jsonData.pid).not.to.eql(null);",
+													"        pm.expect(jsonData.created_date).not.to.eql(null);",
+													"        pm.expect(jsonData.last_modified_date).not.to.eql(null);",
+													"        pm.expect(jsonData.parent_id).not.to.eql(null);",
+													"        pm.expect(jsonData.description).to.eql(\"Description of Module 1\");",
+													"    });",
+													"    ",
+													"    pm.environment.set(\"moduleId1\", jsonData.id);",
+													"    ",
+													"} else {",
+													"    pm.test(`Response status: ${pm.response.code} \\n Response body: ${pm.response.text()}`, () => {",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Module 1\",\r\n  \"description\": \"Description of Module 1\",\r\n  \"shared\": false\r\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/modules",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"modules"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create Module 2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"    pm.test(\"Response status \" + pm.response.code, () => {",
+													"        pm.response.to.have.status(201); ",
+													"    });",
+													"    ",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response data has correct module properties\", () => {",
+													"        pm.expect(jsonData.links).not.to.eql(null);",
+													"        pm.expect(jsonData.id).not.to.eql(null);",
+													"        pm.expect(jsonData.name).to.eql(\"Module 2\");",
+													"        pm.expect(jsonData.order).not.to.eql(null);",
+													"        pm.expect(jsonData.pid).not.to.eql(null);",
+													"        pm.expect(jsonData.created_date).not.to.eql(null);",
+													"        pm.expect(jsonData.last_modified_date).not.to.eql(null);",
+													"        pm.expect(jsonData.parent_id).not.to.eql(null);",
+													"        pm.expect(jsonData.description).to.eql(\"Description of Module 2\");",
+													"    });",
+													"    ",
+													"    pm.environment.set(\"moduleId2\", jsonData.id);",
+													"    ",
+													"} else {",
+													"    pm.test(`Response status: ${pm.response.code} \\n Response body: ${pm.response.text()}`, () => {",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Module 2\",\r\n  \"description\": \"Description of Module 2\",\r\n  \"shared\": false\r\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/modules",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"modules"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Create test case A",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"linkTestCase1\", jsonData.id);",
+													"    pm.environment.set(\"testCaseInfo1\", jsonData);",
+													"    ",
+													"    pm.test(\"Status code is 200\", () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    pm.test(`Response data contains all properties of test case ${jsonData.name}`, () => {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"testCaseName\"));",
+													"        pm.expect(jsonData.order).to.not.eql(null);",
+													"        pm.expect(jsonData.pid).to.not.eql(null);",
+													"        pm.expect(jsonData.created_date).to.not.eql(null);",
+													"        pm.expect(jsonData.last_modified_date).to.not.eql(null);",
+													"        pm.expect(jsonData.web_url).to.not.eql(null);",
+													"        pm.expect(jsonData.parent_id).to.eql(pm.environment.get(\"moduleId2\"));",
+													"        pm.expect(jsonData.test_case_version_id).to.not.eql(null);",
+													"        pm.expect(jsonData.version).to.not.eql(null);",
+													"        pm.expect(jsonData.description).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"        pm.expect(jsonData.precondition).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"        pm.expect(jsonData.creator_id).to.not.eql(null);",
+													"        pm.expect(jsonData.agent_ids).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains test step object\", () =>{",
+													"        pm.expect(jsonData.test_steps.length).to.not.eql(0);",
+													"    });",
+													"    ",
+													"    jsonData.test_steps.forEach((step, index) => {",
+													"        pm.test(`Response data has test_steps[${index}] has links property`, () => {",
+													"            pm.expect(step.links).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] has id property`, () => {",
+													"            pm.expect(step.id).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] contains description property: ${step.description}`, () => {",
+													"            pm.expect(step.description).to.eql(pm.environment.get(\"testStepDescription1\"));",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] contains expected property: ${step.expected}`, () => {",
+													"            pm.expect(step.expected).to.eql(pm.environment.get(\"testStepExpected1\"));",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] has order property`, () => {",
+													"            pm.expect(step.order).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] has ${step.attachments.length} attachment property`, () => {",
+													"            pm.expect(step.attachments).to.not.eql(null);",
+													"            pm.expect(step.attachments.length).to.eql(1);",
+													"            pm.expect(step.attachments.links).not.to.eql(null);",
+													"        });",
+													"    });",
+													"",
+													"    jsonData.properties.forEach((field) => {",
+													"        switch (field.field_name) {",
+													"            case \"Automation\":",
+													"                pm.test(`Response data has automation: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"No\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseAutomationNo\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Automation Content\":",
+													"                pm.test(\"Response data has empty automation content\", () => {",
+													"                    pm.expect(field.field_value).to.eql(\"\");",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Status\":",
+													"                pm.test(`Repsonse data has status: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseStatusInProgress\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Type\":",
+													"                pm.test(`Repsonse data has type: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"Performance\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseTypePerformance\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Priority\":",
+													"                pm.test(`Repsonse data has priority: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"High\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCasePriorityHigh\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Assigned To\":",
+													"                pm.test(`Repsonse data has property assigned to`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(`[API User 1]`);",
+													"                    pm.expect(field.field_value).to.include(pm.environment.get(\"fieldIdTestCaseAssignedToAPIUser1\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Description\":",
+													"                pm.test(`Repsonse data has description: ${field.field_value}`, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Precondition\":",
+													"                pm.test(`Repsonse data has precondition: ${field.field_value}`, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"                });",
+													"                break;",
+													"        }",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(`Response status: ${pm.response.code} \\n Response body: ${pm.response.text()}`, () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"testCaseName\", \"Test Case A\");",
+													"pm.environment.set(\"testCaseDescription\", \"Description of Test Case A\");",
+													"pm.environment.set(\"testCasePrecondition\", \"Precondition of Test Case A\");",
+													"",
+													"pm.environment.set(\"testStepDescription1\", \"Description of test step A1\");",
+													"pm.environment.set(\"testStepExpected1\", \"Expected of test step A1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{testCaseName}}\",\n    \"properties\": [\n        {\n            \"field_id\": \"{{fieldIdTestCaseAutomation}}\",\n            \"field_value\": \"{{fieldIdTestCaseAutomationNo}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseStatus}}\",\n            \"field_value\": \"{{fieldIdTestCaseStatusInProgress}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseType}}\",\n            \"field_value\": \"{{fieldIdTestCaseTypePerformance}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseAssignedTo}}\",\n            \"field_value\": \"[{{fieldIdTestCaseAssignedToAPIUser1}}]\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseDescription}}\",\n            \"field_value\": \"{{testCaseDescription}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCasePrecondition}}\",\n            \"field_value\": \"{{testCasePrecondition}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCasePriority}}\",\n            \"field_value\": \"{{fieldIdTestCasePriorityHigh}}\"\n        }\n    ],\n    \"test_steps\": [\n        {\n            \"description\": \"{{testStepDescription1}}\",\n            \"expected\": \"{{testStepExpected1}}\",\n            \"attachments\": [\n            \t{\n\t\t\t\t\t\"name\": \"sample_file_name.txt\",\n\t\t\t\t\t\"content_type\": \"text/plain\",\n\t\t\t\t\t\"data\": \"dGhpcyBpcyBzYW1wbGUgdGVzdA==\"\n            \t}\n            ]\n        }\n    ],\n    \"parent_id\": \"{{moduleId2}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/test-cases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"test-cases"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Approve test case",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"    var testCaseInfo = pm.environment.get(\"testCaseInfo1\");",
+													"",
+													"    pm.test(\"Status code is 200\", () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has links property\", () => {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has id property\", () => {",
+													"        pm.expect(jsonData.id).to.eql(testCaseInfo.id);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains name: \" + jsonData.name, () => {",
+													"        pm.expect(jsonData.name).to.eql(testCaseInfo.name);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has order property\", () => {",
+													"        pm.expect(jsonData.order).to.eql(testCaseInfo.order);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has pid property\", () => {",
+													"        pm.expect(jsonData.pid).to.eql(testCaseInfo.pid);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has created_date property\", () => {",
+													"        pm.expect(jsonData.created_date).to.eql(testCaseInfo.created_date);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has last_modified_date property\", () => {",
+													"        pm.expect(jsonData.last_modified_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has web_url property\", () => {",
+													"        pm.expect(jsonData.web_url).to.eql(testCaseInfo.web_url);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains parent_id property\", () => {",
+													"        pm.expect(jsonData.parent_id).to.eql(pm.environment.get(\"moduleId2\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has test_case_version_id property\", () => {",
+													"        pm.expect(jsonData.test_case_version_id).to.eql(testCaseInfo.test_case_version_id);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has version property\", () => {",
+													"        var subStrings = testCaseInfo.version.split('.');",
+													"        var newVersion = (parseInt(subStrings[0]) + 1).toString() + '.0';",
+													"        pm.expect(jsonData.version).to.eql(newVersion);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data contains description property: \" + jsonData.description, () => {",
+													"        pm.expect(jsonData.description).to.eql(testCaseInfo.description);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data contains precondition property: \" + jsonData.precondition, () => {",
+													"        pm.expect(jsonData.precondition).to.eql(testCaseInfo.precondition);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has creator_id property\", () => {",
+													"        pm.expect(jsonData.creator_id).to.eql(testCaseInfo.creator_id);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has agent_ids property\", () => {",
+													"        pm.expect(jsonData.agent_ids).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    jsonData.test_steps.forEach(function(step, index) {",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] has links property\", () => {",
+													"            pm.expect(step.links).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] has id property\", () => {",
+													"            pm.expect(step.id).to.eql(testCaseInfo.test_steps[index].id);",
+													"        });",
+													"        ",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] contains description property: \" + step.description, () => {",
+													"            pm.expect(step.description).to.eql(pm.environment.get(\"testStepDescription1\"));",
+													"        });",
+													"        ",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] contains expected property: \" + step.expected, () => {",
+													"            pm.expect(step.expected).to.eql(pm.environment.get(\"testStepExpected1\"));",
+													"        });",
+													"        ",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] has order property\", () => {",
+													"            pm.expect(step.order).to.eql(testCaseInfo.test_steps[index].order);",
+													"        });",
+													"        ",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] has attachment property\", () => {",
+													"            pm.expect(step.attachment).to.not.eql(null);",
+													"        });",
+													"    });",
+													"",
+													"    jsonData.properties.forEach(function(field) {",
+													"        switch (field.field_name) {",
+													"            case \"Automation\":",
+													"                pm.test(\"Response data has automation: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"No\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseAutomationNo\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Automation Content\":",
+													"                pm.test(\"Response data has empty automation content\", () => {",
+													"                    pm.expect(field.field_value).to.eql(\"\");",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Status\":",
+													"                pm.test(\"Repsonse data has status: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseStatusInProgress\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Type\":",
+													"                pm.test(\"Repsonse data has type: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"Performance\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseTypePerformance\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Priority\":",
+													"                pm.test(\"Repsonse data has priority: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"High\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCasePriorityHigh\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Assigned To\":",
+													"                pm.test(`Repsonse data has property assigned to`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(`[API User 1]`);",
+													"                    pm.expect(field.field_value).to.include(pm.environment.get(\"fieldIdTestCaseAssignedToAPIUser1\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Description\":",
+													"                pm.test(\"Repsonse data contains description: \" + field.field_value, () => {",
+													"                    pm.expect(field.field_value).to.eql(testCaseInfo.description);",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Precondition\":",
+													"                pm.test(\"Repsonse data contains precondition: \" + field.field_value, () => {",
+													"                    pm.expect(field.field_value).to.eql(testCaseInfo.precondition);",
+													"                });",
+													"                break;",
+													"        }",
+													"    });",
+													"    ",
+													"    pm.environment.set(\"testCaseInfo1\", jsonData);",
+													"",
+													"} else {",
+													"    pm.test(`Response status: ${pm.response.code} \\n Response body: ${pm.response.text()}`, () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/test-cases/{{linkTestCase1}}/approve",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"test-cases",
+												"{{linkTestCase1}}",
+												"approve"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Main",
+							"item": [
+								{
+									"name": "200 - Create test case - Success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    pm.test(\"Status code is 200\", () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has links property\", () => {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has id property\", () => {",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(`Response data contains name: ${jsonData.name}`, () => {",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"testCaseName\"));",
+													"    });",
+													"",
+													"    pm.test(\"Response data has order property\", () => {",
+													"        pm.expect(jsonData.order).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has pid property\", () => {",
+													"        pm.expect(jsonData.pid).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has created_date property\", () => {",
+													"        pm.expect(jsonData.created_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has last_modified_date property\", () => {",
+													"        pm.expect(jsonData.last_modified_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has web_url property\", () => {",
+													"        pm.expect(jsonData.web_url).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains parent_id property\", () => {",
+													"        pm.expect(jsonData.parent_id).to.eql(pm.environment.get(\"moduleId1\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has test_case_version_id property\", () => {",
+													"        pm.expect(jsonData.test_case_version_id).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has version property\", () => {",
+													"        pm.expect(jsonData.version).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(`Response data contains description property: ${jsonData.description}`, () => {",
+													"        pm.expect(jsonData.description).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"    });",
+													"    ",
+													"    pm.test(`Response data contains precondition property: ${jsonData.precondition}`, () => {",
+													"        pm.expect(jsonData.precondition).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has creator_id property\", () => {",
+													"        pm.expect(jsonData.creator_id).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has agent_ids property\", () => {",
+													"        pm.expect(jsonData.agent_ids).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data contains test step object\", () =>{",
+													"        pm.expect(jsonData.test_steps.length).to.not.eql(0);",
+													"    });",
+													"    ",
+													"    jsonData.test_steps.forEach((step, index) => {",
+													"        pm.test(`Response data has test_steps[${index}] has links property`, () => {",
+													"            pm.expect(step.links).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] has id property`, () => {",
+													"            pm.expect(step.id).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] contains description property: ${step.description}`, () => {",
+													"            pm.expect(step.description).to.eql(pm.environment.get(\"testStepDescription1\"));",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] contains expected property: ${step.expected}`, () => {",
+													"            pm.expect(step.expected).to.eql(pm.environment.get(\"testStepExpected1\"));",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] has order property`, () => {",
+													"            pm.expect(step.order).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] has ${step.attachments.length} attachment property`, () => {",
+													"            pm.expect(step.attachments).to.not.eql(null);",
+													"            pm.expect(step.attachments.length).to.eql(1);",
+													"            pm.expect(step.attachments.links).not.to.eql(null);",
+													"        });",
+													"    });",
+													"",
+													"    jsonData.properties.forEach((field) => {",
+													"        switch (field.field_name) {",
+													"            case \"Automation\":",
+													"                pm.test(`Response data has automation: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"No\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseAutomationNo\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Automation Content\":",
+													"                pm.test(\"Response data has empty automation content\", () => {",
+													"                    pm.expect(field.field_value).to.eql(\"\");",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Status\":",
+													"                pm.test(`Repsonse data has status: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseStatusInProgress\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Type\":",
+													"                pm.test(`Repsonse data has type: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"Performance\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseTypePerformance\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Priority\":",
+													"                pm.test(`Repsonse data has priority: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"High\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCasePriorityHigh\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Assigned To\":",
+													"                pm.test(`Repsonse data has property assigned to`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(`[API User 1]`);",
+													"                    pm.expect(field.field_value).to.include(pm.environment.get(\"fieldIdTestCaseAssignedToAPIUser1\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Description\":",
+													"                pm.test(`Repsonse data has description: ${field.field_value}`, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Precondition\":",
+													"                pm.test(`Repsonse data has precondition: ${field.field_value}`, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"                });",
+													"                break;",
+													"        }",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(`Response status: ${pm.response.code} \\n Response body: ${pm.response.text()}`, () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"testCaseName\", \"Test Case 1\");",
+													"pm.environment.set(\"testCaseDescription\", \"Description of Test Case 1\");",
+													"pm.environment.set(\"testCasePrecondition\", \"Precondition of Test Case 1\");",
+													"",
+													"pm.environment.set(\"testStepDescription1\", \"Description of test step 1\");",
+													"pm.environment.set(\"testStepExpected1\", \"Expected of test step 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{testCaseName}}\",\n    \"properties\": [\n        {\n            \"field_id\": \"{{fieldIdTestCaseAutomation}}\",\n            \"field_value\": \"{{fieldIdTestCaseAutomationNo}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseStatus}}\",\n            \"field_value\": \"{{fieldIdTestCaseStatusInProgress}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseType}}\",\n            \"field_value\": \"{{fieldIdTestCaseTypePerformance}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseAssignedTo}}\",\n            \"field_value\": \"[{{fieldIdTestCaseAssignedToAPIUser1}}]\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseDescription}}\",\n            \"field_value\": \"{{testCaseDescription}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCasePrecondition}}\",\n            \"field_value\": \"{{testCasePrecondition}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCasePriority}}\",\n            \"field_value\": \"{{fieldIdTestCasePriorityHigh}}\"\n        }\n    ],\n    \"test_steps\": [\n        {\n            \"description\": \"{{testStepDescription1}}\",\n            \"expected\": \"{{testStepExpected1}}\",\n            \"attachments\": [\n            \t{\n\t\t\t\t\t\"name\": \"sample_file_name.txt\",\n\t\t\t\t\t\"content_type\": \"text/plain\",\n\t\t\t\t\t\"data\": \"dGhpcyBpcyBzYW1wbGUgdGVzdA==\"\n            \t}\n            ]\n        }\n    ],\n    \"parent_id\": \"{{moduleId1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/test-cases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"test-cases"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Create test case - Success with automation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    pm.test(\"Status code is 200\", () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has links property\", () => {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has id property\", () => {",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains name: \" + jsonData.name, () => {",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"testCaseName\"));",
+													"    });",
+													"",
+													"    pm.test(\"Response data has order property\", () => {",
+													"        pm.expect(jsonData.order).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has pid property\", () => {",
+													"        pm.expect(jsonData.pid).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has created_date property\", () => {",
+													"        pm.expect(jsonData.created_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has last_modified_date property\", () => {",
+													"        pm.expect(jsonData.last_modified_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has web_url property\", () => {",
+													"        pm.expect(jsonData.web_url).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains parent_id property\", () => {",
+													"        pm.expect(jsonData.parent_id).to.eql(pm.environment.get(\"moduleId1\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has test_case_version_id property\", () => {",
+													"        pm.expect(jsonData.test_case_version_id).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has version property\", () => {",
+													"        pm.expect(jsonData.version).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data contains description property: \" + jsonData.description, () => {",
+													"        pm.expect(jsonData.description).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data contains precondition property: \" + jsonData.precondition, () => {",
+													"        pm.expect(jsonData.precondition).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has creator_id property\", () => {",
+													"        pm.expect(jsonData.creator_id).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has agent_ids property\", () => {",
+													"        pm.expect(jsonData.agent_ids).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains test step object\", () =>{",
+													"        pm.expect(jsonData.test_steps.length).to.not.eql(0);",
+													"    });",
+													"    ",
+													"    jsonData.test_steps.forEach((step, index) => {",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] has links property\", () => {",
+													"            pm.expect(step.links).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] has id property\", () => {",
+													"            pm.expect(step.id).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] contains description property: \" + step.description, () => {",
+													"            pm.expect(step.description).to.eql(pm.environment.get(\"testStepDescription1\"));",
+													"        });",
+													"        ",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] contains expected property: \" + step.description, () => {",
+													"            pm.expect(step.expected).to.eql(pm.environment.get(\"testStepExpected1\"));",
+													"        });",
+													"        ",
+													"        pm.test(\"Response data has test_steps[ \" + index + \"] has order property\", () => {",
+													"            pm.expect(step.order).to.not.eql(null);",
+													"        });",
+													"        ",
+													"        pm.test(`Response data has test_steps[${index}] has ${step.attachments.length} attachment property`, () => {",
+													"            pm.expect(step.attachments).to.not.eql(null);",
+													"            pm.expect(step.attachments.length).to.eql(1);",
+													"            pm.expect(step.attachments.links).not.to.eql(null);",
+													"        });",
+													"    });",
+													"",
+													"    jsonData.properties.forEach((field) => {",
+													"        switch (field.field_name) {",
+													"            case \"Automation\":",
+													"                pm.test(\"Response data has automation: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"Yes\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseAutomationYes\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Automation Content\":",
+													"                pm.test(\"Response data has empty automation content\", () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCaseAutomationContent\"));",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Status\":",
+													"                pm.test(\"Repsonse data has status: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseStatusInProgress\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Type\":",
+													"                pm.test(\"Repsonse data has type: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"Performance\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseTypePerformance\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Priority\":",
+													"                pm.test(\"Repsonse data has priority: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"High\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCasePriorityHigh\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Assigned To\":",
+													"                pm.test(`Repsonse data has property assigned to`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(`[API User 1]`);",
+													"                    pm.expect(field.field_value).to.include(pm.environment.get(\"fieldIdTestCaseAssignedToAPIUser1\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Description\":",
+													"                pm.test(\"Repsonse data contains description: \" + field.field_value, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Precondition\":",
+													"                pm.test(\"Repsonse data contains precondition: \" + field.field_value, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"                });",
+													"                break;",
+													"        }",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"testCaseName\", \"Test Case Automation 2\");",
+													"pm.environment.set(\"testCaseDescription\", \"Description of Test Case Automation 2\");",
+													"pm.environment.set(\"testCasePrecondition\", \"Precondition of Test Case Automation 2\");",
+													"",
+													"pm.environment.set(\"testCaseAutomationContent\", \"Automation Content of Test Case Automation 2\");",
+													"",
+													"pm.environment.set(\"testStepDescription1\", \"Description of test step 1\");",
+													"pm.environment.set(\"testStepExpected1\", \"Expected of test step 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{testCaseName}}\",\n\t\"properties\": [\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseAutomation}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseAutomationYes}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseAutomationContent}}\",\n\t    \t\"field_value\": \"{{testCaseAutomationContent}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseStatus}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseStatusInProgress}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseType}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseTypePerformance}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseAssignedTo}}\",\n\t    \t\"field_value\": \"[{{fieldIdTestCaseAssignedToAPIUser1}}]\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseDescription}}\",\n\t    \t\"field_value\": \"{{testCaseDescription}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCasePrecondition}}\",\n\t    \t\"field_value\": \"{{testCasePrecondition}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCasePriority}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCasePriorityHigh}}\"\n\t\t}\n\t],\n\t\"test_steps\": [\n\t\t{\n\t\t\t\"description\": \"{{testStepDescription1}}\",\n\t\t\t\"expected\": \"{{testStepExpected1}}\",\n\t\t\t\"attachments\": [\n            \t{\n\t\t\t\t\t\"name\": \"sample_file_name.txt\",\n\t\t\t\t\t\"content_type\": \"text/plain\",\n\t\t\t\t\t\"data\": \"dGhpcyBpcyBzYW1wbGUgdGVzdA==\"\n            \t}\n            ]\n\t\t}\n\t],\n\t\"parent_id\": \"{{moduleId1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/test-cases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"test-cases"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Create test case - Has no property test steps",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    pm.test(\"Status code is 200\", () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has links property\", () => {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has id property\", () => {",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains name: \" + jsonData.name, () => {",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"testCaseName\"));",
+													"    });",
+													"",
+													"    pm.test(\"Response data has order property\", () => {",
+													"        pm.expect(jsonData.order).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has pid property\", () => {",
+													"        pm.expect(jsonData.pid).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has created_date property\", () => {",
+													"        pm.expect(jsonData.created_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has last_modified_date property\", () => {",
+													"        pm.expect(jsonData.last_modified_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has web_url property\", () => {",
+													"        pm.expect(jsonData.web_url).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains parent_id property\", () => {",
+													"        pm.expect(jsonData.parent_id).to.eql(pm.environment.get(\"moduleId1\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has test_case_version_id property\", () => {",
+													"        pm.expect(jsonData.test_case_version_id).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has version property\", () => {",
+													"        pm.expect(jsonData.version).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data contains description property: \" + jsonData.description, () => {",
+													"        pm.expect(jsonData.description).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data contains precondition property: \" + jsonData.precondition, () => {",
+													"        pm.expect(jsonData.precondition).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has creator_id property\", () => {",
+													"        pm.expect(jsonData.creator_id).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data has agent_ids property\", () => {",
+													"        pm.expect(jsonData.agent_ids).to.not.eql(null);",
+													"    });",
+													"    ",
+													"    pm.test(\"Response data does not contain test step object\", () =>{",
+													"        pm.expect(jsonData.test_steps.length).to.eql(0);",
+													"    });",
+													"",
+													"    jsonData.properties.forEach((field) => {",
+													"        switch (field.field_name) {",
+													"            case \"Automation\":",
+													"                pm.test(\"Response data has automation: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"No\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseAutomationNo\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Automation Content\":",
+													"                pm.test(\"Response data has empty automation content\", () => {",
+													"                    pm.expect(field.field_value).to.eql(\"\");",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Status\":",
+													"                pm.test(\"Repsonse data has status: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseStatusInProgress\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Type\":",
+													"                pm.test(\"Repsonse data has type: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"Performance\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseTypePerformance\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Priority\":",
+													"                pm.test(\"Repsonse data has priority: \" + field.field_value_name, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"High\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCasePriorityHigh\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Assigned To\":",
+													"                pm.test(`Repsonse data has property assigned to`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(`[API User 1]`);",
+													"                    pm.expect(field.field_value).to.include(pm.environment.get(\"fieldIdTestCaseAssignedToAPIUser1\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Description\":",
+													"                pm.test(\"Repsonse data contains description: \" + field.field_value, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Precondition\":",
+													"                pm.test(\"Repsonse data contains precondition: \" + field.field_value, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"                });",
+													"                break;",
+													"        }",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(\"Status code: \" + pm.response.code + \"and response body:\" + pm.response.text(), () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"testCaseName\", \"Test Case 7\");",
+													"pm.environment.set(\"testCaseDescription\", \"Description of Test Case 7\");",
+													"pm.environment.set(\"testCasePrecondition\", \"Precondition of Test Case 7\");",
+													"",
+													"pm.environment.set(\"testStepDescription1\", \"Description of test step 1\");",
+													"pm.environment.set(\"testStepExpected1\", \"Expected of test step 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{testCaseName}}\",\n    \"properties\": [\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseAutomation}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseAutomationNo}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseStatus}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseStatusInProgress}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseType}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseTypePerformance}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseAssignedTo}}\",\n\t    \t\"field_value\": \"[{{fieldIdTestCaseAssignedToAPIUser1}}]\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseDescription}}\",\n\t    \t\"field_value\": \"{{testCaseDescription}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCasePrecondition}}\",\n\t    \t\"field_value\": \"{{testCasePrecondition}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCasePriority}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCasePriorityHigh}}\"\n\t\t}\n\t],\n\t\"parent_id\": \"{{moduleId1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/test-cases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"test-cases"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Create test case - Success with called test case",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    pm.test(\"Status code is 200\", () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has links property\", () => {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has id property\", () => {",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(`Response data contains name: ${jsonData.name}`, () => {",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"testCaseName\"));",
+													"    });",
+													"",
+													"    pm.test(\"Response data has order property\", () => {",
+													"        pm.expect(jsonData.order).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has pid property\", () => {",
+													"        pm.expect(jsonData.pid).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has created_date property\", () => {",
+													"        pm.expect(jsonData.created_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has last_modified_date property\", () => {",
+													"        pm.expect(jsonData.last_modified_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has web_url property\", () => {",
+													"        pm.expect(jsonData.web_url).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains parent_id property\", () => {",
+													"        pm.expect(jsonData.parent_id).to.eql(pm.environment.get(\"moduleId1\"));",
+													"    });",
+													"",
+													"    pm.test(\"Response data has test_case_version_id property\", () => {",
+													"        pm.expect(jsonData.test_case_version_id).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has version property\", () => {",
+													"        pm.expect(jsonData.version).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(`Response data contains description property: ${jsonData.description}`, () => {",
+													"        pm.expect(jsonData.description).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"    });",
+													"",
+													"    pm.test(`Response data contains precondition property: ${jsonData.precondition}`, () => {",
+													"        pm.expect(jsonData.precondition).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"    });",
+													"",
+													"    pm.test(\"Response data has creator_id property\", () => {",
+													"        pm.expect(jsonData.creator_id).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has agent_ids property\", () => {",
+													"        pm.expect(jsonData.agent_ids).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains test step object\", () => {",
+													"        pm.expect(jsonData.test_steps.length).to.not.eql(0);",
+													"    });",
+													"",
+													"    jsonData.test_steps.forEach((step, index) => {",
+													"        pm.test(`Response data has test_steps[${index}] has links property`, () => {",
+													"            pm.expect(step.links).to.not.eql(null);",
+													"        });",
+													"",
+													"        pm.test(`Response data has test_steps[${index}] has id property`, () => {",
+													"            pm.expect(step.id).to.not.eql(null);",
+													"        });",
+													"",
+													"        pm.test(`Response data has test_steps[${index}] has order property`, () => {",
+													"            pm.expect(step.order).to.not.eql(null);",
+													"        });",
+													"",
+													"        pm.test(`Response data has test_steps[${index}] has ${step.attachments.length} attachment property`, () => {",
+													"            pm.expect(step.attachments).to.not.eql(null);",
+													"            pm.expect(step.attachments.length).to.eql(1);",
+													"            pm.expect(step.attachments.links).not.to.eql(null);",
+													"        });",
+													"",
+													"        pm.test(\"Response data contains called_test_case object\", () => {",
+													"            pm.expect(pm.response.text()).to.include(\"called_test_case\");",
+													"        });",
+													"",
+													"        pm.test(`Response data has test_steps[${index}] has called_test_case property`, () => {",
+													"            var testCaseInfo = pm.environment.get(\"testCaseInfo1\");",
+													"",
+													"            pm.expect(step.called_test_case.links).to.not.eql(null);",
+													"            pm.expect(step.called_test_case.id).to.eql(pm.environment.get(\"linkTestCase1\"));",
+													"            pm.expect(step.called_test_case.name).to.eql(testCaseInfo.name);",
+													"            pm.expect(step.called_test_case.order).to.eql(testCaseInfo.order);",
+													"            pm.expect(step.called_test_case.pid).to.eql(testCaseInfo.pid);",
+													"            pm.expect(step.called_test_case.created_date).to.eql(testCaseInfo.created_date);",
+													"            pm.expect(step.called_test_case.last_modified_date).to.not.eql(null);",
+													"            pm.expect(step.called_test_case.parent_id).to.eql(testCaseInfo.parent_id);",
+													"            pm.expect(step.called_test_case.test_case_version_id).to.eql(testCaseInfo.test_case_version_id);",
+													"            pm.expect(step.called_test_case.description).to.eql(testCaseInfo.description);",
+													"            pm.expect(step.called_test_case.precondition).to.eql(testCaseInfo.precondition);",
+													"            pm.expect(step.called_test_case.creator_id).to.eql(testCaseInfo.creator_id);",
+													"            pm.expect(step.called_test_case.agent_ids).to.eql(testCaseInfo.agent_ids);",
+													"",
+													"            step.called_test_case.properties.forEach((field) => {",
+													"                switch (field.field_name) {",
+													"                    case \"Automation\":",
+													"                        pm.test(`Response data has automation: ${field.field_value_name}`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(\"No\");",
+													"                            pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseAutomationNo\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Automation Content\":",
+													"                        pm.test(\"Response data has empty automation content\", () => {",
+													"                            pm.expect(field.field_value).to.eql(\"\");",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Status\":",
+													"                        pm.test(`Repsonse data has status: ${field.field_value_name}`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                            pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseStatusInProgress\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Type\":",
+													"                        pm.test(`Repsonse data has type: ${field.field_value_name}`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(\"Performance\");",
+													"                            pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseTypePerformance\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Priority\":",
+													"                        pm.test(`Repsonse data has priority: ${field.field_value_name}`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(\"High\");",
+													"                            pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCasePriorityHigh\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Assigned To\":",
+													"                        pm.test(`Repsonse data has property assigned to`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(`[API User 1]`);",
+													"                            pm.expect(field.field_value).to.include(pm.environment.get(\"fieldIdTestCaseAssignedToAPIUser1\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Description\":",
+													"                        pm.test(`Repsonse data has description: ${field.field_value}`, () => {",
+													"                            pm.expect(field.field_value).to.eql(testCaseInfo.description);",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Precondition\":",
+													"                        pm.test(`Repsonse data has precondition: ${field.field_value}`, () => {",
+													"                            pm.expect(field.field_value).to.eql(testCaseInfo.precondition);",
+													"                        });",
+													"                        break;",
+													"                }",
+													"            });",
+													"        });",
+													"    });",
+													"",
+													"    jsonData.properties.forEach((field) => {",
+													"        switch (field.field_name) {",
+													"            case \"Automation\":",
+													"                pm.test(`Response data has automation: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"No\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseAutomationNo\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Automation Content\":",
+													"                pm.test(\"Response data has empty automation content\", () => {",
+													"                    pm.expect(field.field_value).to.eql(\"\");",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Status\":",
+													"                pm.test(`Repsonse data has status: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseStatusInProgress\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Type\":",
+													"                pm.test(`Repsonse data has type: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"Performance\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseTypePerformance\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Priority\":",
+													"                pm.test(`Repsonse data has priority: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"High\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCasePriorityHigh\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Assigned To\":",
+													"                pm.test(`Repsonse data has property assigned to`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(`[API User 1]`);",
+													"                    pm.expect(field.field_value).to.include(pm.environment.get(\"fieldIdTestCaseAssignedToAPIUser1\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Description\":",
+													"                pm.test(`Repsonse data has description: ${field.field_value}`, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Precondition\":",
+													"                pm.test(`Repsonse data has precondition: ${field.field_value}`, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"                });",
+													"                break;",
+													"        }",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(`Response status: ${pm.response.code} \\n Response body: ${pm.response.text()}`, () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"testCaseName\", \"Test Case 8\");",
+													"pm.environment.set(\"testCaseDescription\", \"Description of Test Case 8\");",
+													"pm.environment.set(\"testCasePrecondition\", \"Precondition of Test Case 8\");",
+													"",
+													"pm.environment.set(\"testStepDescription1\", \"Description of test step 1\");",
+													"pm.environment.set(\"testStepExpected1\", \"Expected of test step 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{testCaseName}}\",\n    \"properties\": [\n        {\n            \"field_id\": \"{{fieldIdTestCaseAutomation}}\",\n            \"field_value\": \"{{fieldIdTestCaseAutomationNo}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseStatus}}\",\n            \"field_value\": \"{{fieldIdTestCaseStatusInProgress}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseType}}\",\n            \"field_value\": \"{{fieldIdTestCaseTypePerformance}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseAssignedTo}}\",\n            \"field_value\": \"[{{fieldIdTestCaseAssignedToAPIUser1}}]\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseDescription}}\",\n            \"field_value\": \"{{testCaseDescription}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCasePrecondition}}\",\n            \"field_value\": \"{{testCasePrecondition}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCasePriority}}\",\n            \"field_value\": \"{{fieldIdTestCasePriorityHigh}}\"\n        }\n    ],\n    \"test_steps\": [\n        {\n            \"description\": \"{{testStepDescription1}}\",\n            \"expected\": \"{{testStepExpected1}}\",\n            \"called_test_case_id\": \"{{linkTestCase1}}\",\n            \"attachments\": [\n                {\n                    \"name\": \"sample_file_name.txt\",\n                    \"content_type\": \"text/plain\",\n                    \"data\": \"dGhpcyBpcyBzYW1wbGUgdGVzdA==\"\n                }\n            ]\n        }\n    ],\n    \"parent_id\": \"{{moduleId1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/test-cases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"test-cases"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "400 - Create test case - Call test case without test step expected result",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 400) {",
+													"    pm.test(\"Response status: \" + pm.response.code, () => {",
+													"        pm.response.to.have.status(400);",
+													"    });",
+													"",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    pm.test(\"Response body has message property contains 'testSteps[0].expectedResult Expected result of Test Step cannot be null'\", () => {",
+													"        pm.expect(jsonData.message).to.include(\"Expected result of Test Step cannot be null\");",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), () => {",
+													"        pm.response.to.have.status(400);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"Test Case 400\",\n\t\"properties\": [\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseAutomation}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseAutomationNo}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseStatus}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseStatusInProgress}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseType}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseTypePerformance}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseAssignedTo}}\",\n\t    \t\"field_value\": \"[{{fieldIdTestCaseAssignedToAPIUser1}}]\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseDescription}}\",\n\t    \t\"field_value\": \"Description of Test Case 400\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCasePrecondition}}\",\n\t    \t\"field_value\": \"Precondition of Test Case 400\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCasePriority}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCasePriorityHigh}}\"\n\t\t}\n\t],\n\t\"test_steps\": [\n\t\t{\n\t\t\t\"description\": \"Description of Test Step 400\",\n\t\t\t\"called_test_case_id\": \"{{linkTestCase1}}\"\n\t\t}\n\t],\n\t\"parent_id\": \"{{moduleId1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/test-cases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"test-cases"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Create test case - Call test case with empty test step expected result",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    pm.test(\"Status code is 200\", () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has links property\", () => {",
+													"        pm.expect(jsonData.links).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has id property\", () => {",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(`Response data contains name: ${jsonData.name}`, () => {",
+													"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"testCaseName\"));",
+													"    });",
+													"",
+													"    pm.test(\"Response data has order property\", () => {",
+													"        pm.expect(jsonData.order).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has pid property\", () => {",
+													"        pm.expect(jsonData.pid).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has created_date property\", () => {",
+													"        pm.expect(jsonData.created_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has last_modified_date property\", () => {",
+													"        pm.expect(jsonData.last_modified_date).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has web_url property\", () => {",
+													"        pm.expect(jsonData.web_url).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data contains parent_id property\", () => {",
+													"        pm.expect(jsonData.parent_id).to.eql(pm.environment.get(\"moduleId1\"));",
+													"    });",
+													"",
+													"    pm.test(\"Response data has test_case_version_id property\", () => {",
+													"        pm.expect(jsonData.test_case_version_id).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has version property\", () => {",
+													"        pm.expect(jsonData.version).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(`Response data contains description property: ${jsonData.description}`, () => {",
+													"        pm.expect(jsonData.description).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"    });",
+													"",
+													"    pm.test(`Response data contains precondition property: ${jsonData.precondition}`, () => {",
+													"        pm.expect(jsonData.precondition).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"    });",
+													"",
+													"    pm.test(\"Response data has creator_id property\", () => {",
+													"        pm.expect(jsonData.creator_id).to.not.eql(null);",
+													"    });",
+													"",
+													"    pm.test(\"Response data has agent_ids property\", () => {",
+													"        pm.expect(jsonData.agent_ids).to.not.eql(null);",
+													"    });",
+													"",
+													"    jsonData.test_steps.forEach((step, index) => {",
+													"        pm.test(`Response data has test_steps[${index}] has links property`, () => {",
+													"            pm.expect(step.links).to.not.eql(null);",
+													"        });",
+													"",
+													"        pm.test(`Response data has test_steps[${index}] has id property`, () => {",
+													"            pm.expect(step.id).to.not.eql(null);",
+													"        });",
+													"",
+													"        pm.test(`Response data has test_steps[${index}] has order property`, () => {",
+													"            pm.expect(step.order).to.not.eql(null);",
+													"        });",
+													"",
+													"        pm.test(`Response data has test_steps[${index}] has ${step.attachments.length} attachment property`, () => {",
+													"            pm.expect(step.attachments).to.not.eql(null);",
+													"            pm.expect(step.attachments.length).to.eql(1);",
+													"            pm.expect(step.attachments.links).not.to.eql(null);",
+													"        });",
+													"",
+													"        pm.test(`Response data has test_steps[${index}] has called_test_case property`, () => {",
+													"            var testCaseInfo = pm.environment.get(\"testCaseInfo1\");",
+													"",
+													"            pm.expect(step.called_test_case.links).to.not.eql(null);",
+													"            pm.expect(step.called_test_case.id).to.eql(pm.environment.get(\"linkTestCase1\"));",
+													"            pm.expect(step.called_test_case.name).to.eql(testCaseInfo.name);",
+													"            pm.expect(step.called_test_case.order).to.eql(testCaseInfo.order);",
+													"            pm.expect(step.called_test_case.pid).to.eql(testCaseInfo.pid);",
+													"            pm.expect(step.called_test_case.created_date).to.eql(testCaseInfo.created_date);",
+													"            pm.expect(step.called_test_case.last_modified_date).to.not.eql(null);",
+													"            pm.expect(step.called_test_case.parent_id).to.eql(testCaseInfo.parent_id);",
+													"            pm.expect(step.called_test_case.test_case_version_id).to.eql(testCaseInfo.test_case_version_id);",
+													"            pm.expect(step.called_test_case.description).to.eql(testCaseInfo.description);",
+													"            pm.expect(step.called_test_case.precondition).to.eql(testCaseInfo.precondition);",
+													"            pm.expect(step.called_test_case.creator_id).to.eql(testCaseInfo.creator_id);",
+													"            pm.expect(step.called_test_case.agent_ids).to.eql(testCaseInfo.agent_ids);",
+													"",
+													"            step.called_test_case.properties.forEach((field) => {",
+													"                switch (field.field_name) {",
+													"                    case \"Automation\":",
+													"                        pm.test(`Response data has automation: ${field.field_value_name}`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(\"No\");",
+													"                            pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseAutomationNo\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Automation Content\":",
+													"                        pm.test(\"Response data has empty automation content\", () => {",
+													"                            pm.expect(field.field_value).to.eql(\"\");",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Status\":",
+													"                        pm.test(`Repsonse data has status: ${field.field_value_name}`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                            pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseStatusInProgress\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Type\":",
+													"                        pm.test(`Repsonse data has type: ${field.field_value_name}`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(\"Performance\");",
+													"                            pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseTypePerformance\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Priority\":",
+													"                        pm.test(`Repsonse data has priority: ${field.field_value_name}`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(\"High\");",
+													"                            pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCasePriorityHigh\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Assigned To\":",
+													"                        pm.test(`Repsonse data has property assigned to`, () => {",
+													"                            pm.expect(field.field_value_name).to.eql(`[API User 1]`);",
+													"                            pm.expect(field.field_value).to.include(pm.environment.get(\"fieldIdTestCaseAssignedToAPIUser1\").toString());",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Description\":",
+													"                        pm.test(`Repsonse data has description: ${field.field_value}`, () => {",
+													"                            pm.expect(field.field_value).to.eql(testCaseInfo.description);",
+													"                        });",
+													"                        break;",
+													"",
+													"                    case \"Precondition\":",
+													"                        pm.test(`Repsonse data has precondition: ${field.field_value}`, () => {",
+													"                            pm.expect(field.field_value).to.eql(testCaseInfo.precondition);",
+													"                        });",
+													"                        break;",
+													"                }",
+													"            });",
+													"        });",
+													"    });",
+													"",
+													"    jsonData.properties.forEach((field) => {",
+													"        switch (field.field_name) {",
+													"            case \"Automation\":",
+													"                pm.test(`Response data has automation: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"No\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseAutomationNo\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Automation Content\":",
+													"                pm.test(\"Response data has empty automation content\", () => {",
+													"                    pm.expect(field.field_value).to.eql(\"\");",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Status\":",
+													"                pm.test(`Repsonse data has status: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"In Progress\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseStatusInProgress\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Type\":",
+													"                pm.test(`Repsonse data has type: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"Performance\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCaseTypePerformance\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Priority\":",
+													"                pm.test(`Repsonse data has priority: ${field.field_value_name}`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(\"High\");",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"fieldIdTestCasePriorityHigh\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Assigned To\":",
+													"                pm.test(`Repsonse data has property assigned to`, () => {",
+													"                    pm.expect(field.field_value_name).to.eql(`[API User 1]`);",
+													"                    pm.expect(field.field_value).to.include(pm.environment.get(\"fieldIdTestCaseAssignedToAPIUser1\").toString());",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Description\":",
+													"                pm.test(`Repsonse data has description: ${field.field_value}`, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCaseDescription\"));",
+													"                });",
+													"                break;",
+													"",
+													"            case \"Precondition\":",
+													"                pm.test(`Repsonse data has precondition: ${field.field_value}`, () => {",
+													"                    pm.expect(field.field_value).to.eql(pm.environment.get(\"testCasePrecondition\"));",
+													"                });",
+													"                break;",
+													"        }",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(`Response status: ${pm.response.code} \\n Response body: ${pm.response.text()}`, () => {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"testCaseName\", \"Test Case 10\");",
+													"pm.environment.set(\"testCaseDescription\", \"Description of Test Case 10\");",
+													"pm.environment.set(\"testCasePrecondition\", \"Precondition of Test Case 10\");",
+													"",
+													"pm.environment.set(\"testStepDescription1\", \"Description of test step 1\");",
+													"pm.environment.set(\"testStepExpected1\", \"Expected of test step 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{testCaseName}}\",\n\t\"properties\": [\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseAutomation}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseAutomationNo}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseStatus}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseStatusInProgress}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseType}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCaseTypePerformance}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseAssignedTo}}\",\n\t    \t\"field_value\": \"[{{fieldIdTestCaseAssignedToAPIUser1}}]\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCaseDescription}}\",\n\t    \t\"field_value\": \"{{testCaseDescription}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCasePrecondition}}\",\n\t    \t\"field_value\": \"{{testCasePrecondition}}\"\n\t\t},\n\t\t{\n\t    \t\"field_id\": \"{{fieldIdTestCasePriority}}\",\n\t    \t\"field_value\": \"{{fieldIdTestCasePriorityHigh}}\"\n\t\t}\n\t],\n\t\"test_steps\": [\n\t\t{\n\t\t\t\"description\": \"{{testStepDescription1}}\",\n\t\t\t\"expected\": \"\",\n\t\t\t\"called_test_case_id\": \"{{linkTestCase1}}\",\n\t\t\t\"attachments\": [\n                {\n                    \"name\": \"sample_file_name.txt\",\n                    \"content_type\": \"text/plain\",\n                    \"data\": \"dGhpcyBpcyBzYW1wbGUgdGVzdA==\"\n                }\n            ]\n\t\t}\n\t],\n\t\"parent_id\": \"{{moduleId1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/test-cases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"test-cases"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Cleanup",
+							"item": [
+								{
+									"name": "200 - Cleanup - Delete project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response code: \" + pm.response.code, function(){",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.test(\"Delete project success without any errors\", function(){",
+													"        pm.expect(jsonData.hasError.toString()).to.eql(\"false\");",
+													"        pm.expect(jsonData.result.id).to.eql(pm.environment.get(\"projectId\"));",
+													"        pm.expect(jsonData.result.status).to.eql(\"Archive\");",
+													"    });",
+													"    pm.environment.unset(\"projectId\");",
+													"    pm.environment.unset(\"projectStartDate\");",
+													"    pm.environment.unset(\"projectEndDate\");",
+													"} else {",
+													"    //other mark failed",
+													"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// generator csrf token\r",
+													"var base64object = function(input) {\r",
+													" var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));\r",
+													" var base64 = CryptoJS.enc.Base64.stringify(inputWords);\r",
+													" return base64;\r",
+													"};\r",
+													"let uuid = require('uuid');\r",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());\r",
+													"pm.environment.set(\"csrfToken\", token);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "id",
+													"value": "{{projectId}}",
+													"type": "text"
+												},
+												{
+													"key": "dojo.preventCache",
+													"value": "{{csrfToken}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/proj/delete-project",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"proj",
+												"delete-project"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Logout",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Response code: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.environment.unset(\"qtestUserCookie\");",
+													"    pm.environment.unset(\"tokenType\");",
+													"    pm.environment.unset(\"csrfToken\");",
+													"    pm.environment.unset(\"accessToken\");",
+													"    pm.environment.unset(\"projectId\");",
+													"    pm.environment.unset(\"projectName\");",
+													"    pm.environment.unset(\"projectStartDate\");",
+													"    pm.environment.unset(\"projectEndDate\");",
+													"    pm.environment.unset(\"projectStartDate\");",
+													"    ",
+													"    pm.environment.unset(\"moduleId1\");",
+													"    pm.environment.unset(\"moduleId2\");",
+													"    ",
+													"    pm.environment.unset(\"fieldIdTestCaseAutomation\");",
+													"    pm.environment.unset(\"fieldIdTestCaseAutomationYes\");",
+													"    pm.environment.unset(\"fieldIdTestCaseAutomationNo\");",
+													"    pm.environment.unset(\"fieldIdTestCaseAutomationContent\");",
+													"    pm.environment.unset(\"fieldIdTestCaseStatus\");",
+													"    pm.environment.unset(\"fieldIdTestCaseStatusNew\");",
+													"    pm.environment.unset(\"fieldIdTestCaseStatusInProgress\");",
+													"    pm.environment.unset(\"fieldIdTestCaseStatusReadyForBaseline\");",
+													"    pm.environment.unset(\"fieldIdTestCaseStatusBaselined\");",
+													"    pm.environment.unset(\"fieldIdTestCaseType\");",
+													"    pm.environment.unset(\"fieldIdTestCaseTypeManual\");",
+													"    pm.environment.unset(\"fieldIdTestCaseTypeAutomation\");",
+													"    pm.environment.unset(\"fieldIdTestCaseTypePerformance\");",
+													"    pm.environment.unset(\"fieldIdTestCaseTypeScenario\");",
+													"    pm.environment.unset(\"fieldIdTestCaseAssignedTo\");",
+													"    pm.environment.unset(\"fieldIdTestCaseAssignedToAPIUser1\"); ",
+													"    pm.environment.unset(\"fieldIdTestCaseAssignedToSiteAdminUser\");",
+													"    pm.environment.unset(\"fieldIdTestCaseDescription\");",
+													"    pm.environment.unset(\"fieldIdTestCasePrecondition\");",
+													"    pm.environment.unset(\"fieldIdTestCasePriority\");",
+													"    pm.environment.unset(\"fieldIdTestCasePriorityUndecided\");",
+													"    pm.environment.unset(\"fieldIdTestCasePriorityLow\");",
+													"    pm.environment.unset(\"fieldIdTestCasePriorityMedium\");",
+													"    pm.environment.unset(\"fieldIdTestCasePriorityHigh\");",
+													"    pm.environment.unset(\"fieldIdTestCasePriorityUrgent\");",
+													"    ",
+													"    pm.environment.unset(\"testCaseName\");",
+													"    pm.environment.unset(\"testCaseDescription\");",
+													"    pm.environment.unset(\"testCasePrecondition\");",
+													"    pm.environment.unset(\"testStepDescription1\");",
+													"    pm.environment.unset(\"testStepExpected1\");",
+													"    pm.environment.unset(\"testCaseAutomationContent\");",
+													"    ",
+													"    pm.environment.unset(\"linkTestCase1\");",
+													"    pm.environment.unset(\"testCaseInfo1\");",
+													"    pm.environment.unset(\"userId\");",
+													"    pm.environment.unset(\"moduleId2\");",
+													"    ",
+													"    pm.environment.unset(\"username1\");",
+													"    pm.environment.unset(\"firstName1\");",
+													"    pm.environment.unset(\"lastName1\");",
+													"    pm.environment.unset(\"email1\");",
+													"    ",
+													"    var userList = pm.environment.get(\"userList\");",
+													"    userList.forEach((user) => {",
+													"        var userName = `fieldIdTestCaseAssignedTo${user.first_name}${user.last_name}`.replace(/[\\s\\/-]/g, \"\");",
+													"        pm.environment.unset(userName);",
+													"    });",
+													"    pm.environment.unset(\"userList\");",
+													"    pm.environment.unset(\"fieldIdTestCaseAssignedToUserTest\");",
+													"    pm.environment.unset(\"userTestFullName\");",
+													"    pm.environment.unset(\"userId\");",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/revoke",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"revoke"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

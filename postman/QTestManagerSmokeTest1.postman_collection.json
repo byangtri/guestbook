@@ -1,0 +1,211 @@
+{
+	"info": {
+		"_postman_id": "30124f18-b30f-4cf4-85e8-a82e7ca568f4",
+		"name": "QTestManagerSmokeTest1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SmokeTest1",
+			"item": [
+				{
+					"name": "Logout",
+					"item": [
+						{
+							"name": "Precondition",
+							"item": [
+								{
+									"name": "200 - Precondition - Login success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code + \" -  Login\", function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    //assert response body",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"item": [
+						{
+							"name": "200 - Login - Success",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    //assert status",
+											"    pm.test(\"Response status: \" + pm.response.code + \" -  Login\", function() {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"    //assert response body",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+											"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+											"} else {",
+											"    //other mark failed",
+											"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Basic dGFtdG1uZ3V5ZW46"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "password",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/oauth/token",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

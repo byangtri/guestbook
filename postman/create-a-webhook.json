@@ -1,0 +1,2446 @@
+{
+	"info": {
+		"_postman_id": "7a0295c0-7634-447d-a18a-febeac881ca6",
+		"name": "Create a webhook",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create a webhook",
+			"item": [
+				{
+					"name": "Precondition",
+					"item": [
+						{
+							"name": "200 - Precondition - Login with user admin",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 200;",
+											"if (pm.response.code === RESPONSE_CODE) {",
+											"    //assert status",
+											"    pm.test(\"Response status: \" + pm.response.code + \" -  Login\", function() {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    //assert response body",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+											"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+											"    ",
+											"    var CryptoJS = require(\"crypto-js\");",
+											"    //Encrypt",
+											"    var rawStr = CryptoJS.enc.Utf8.parse(jsonData.access_token);",
+											"    var base64 = CryptoJS.enc.Base64.stringify(rawStr);",
+											"    pm.environment.set(\"qtestUserCookie\", \"UserContextToken=\" + base64);",
+											"} else {",
+											"    //other mark failed",
+											"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// generator csrf token",
+											"var base64object = function(input) {",
+											" var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));",
+											" var base64 = CryptoJS.enc.Base64.stringify(inputWords);",
+											" return base64;",
+											"};",
+											"let uuid = require('uuid');",
+											"let token = uuid.v4() + \"QAS\" + base64object(Date.now());",
+											"pm.environment.set(\"csrfToken\", token); ",
+											"",
+											"let eventsList = [\"testcase_created\",",
+											"  \"testcase_updated\",",
+											"  \"testcase_deleted\",",
+											"  \"testcase_approved\",",
+											"  \"testrun_created\",",
+											"  \"testrun_updated\",",
+											"  \"testrun_deleted\",",
+											"  \"testlog_submitted\",",
+											"  \"testlog_modified\",",
+											"  \"project_created\",",
+											"  \"project_updated\",",
+											"  \"defect_submitted\",",
+											"  \"defect_modified\"];",
+											"pm.environment.set(\"webhookEventList\", eventsList); "
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Basic dGFtdG1uZ3V5ZW46"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "password",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/oauth/token",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Main",
+					"item": [
+						{
+							"name": "201 - Register a webhook -  with a event",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 201;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    let jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains: `, () => {",
+											"        pm.expect(jsonData.name).to.includes(pm.environment.get('webhookName'));",
+											"        pm.expect(jsonData.url).to.includes(pm.environment.get('webhookUrl'));",
+											"        var events = JSON.parse(pm.environment.get('webhookEvents'));",
+											"        pm.expect(jsonData.events.length === 1).to.be.true;",
+											"        pm.expect(events.includes(jsonData.events[0])).to.be.true;",
+											"        pm.expect(!!jsonData.id).to.be.true;",
+											"        pm.expect(jsonData.secretKey).to.includes(pm.environment.get('webhookSecretKey'));",
+											"    });",
+											"    pm.environment.set(\"webhookId\", jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"let webhookEvents = eventsList.slice(0, 1);\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 - Delete a webhook  -  with a event",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 200;",
+											"const webhookId = pm.environment.get(\"webhookId\");",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks/{{webhookId}}",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks",
+										"{{webhookId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "201 - Register a webhook -  with some events",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 201;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    let jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains: `, () => {",
+											"        pm.expect(jsonData.name).to.includes(pm.environment.get('webhookName'));",
+											"        pm.expect(jsonData.url).to.includes(pm.environment.get('webhookUrl'));",
+											"        var events = JSON.parse(pm.environment.get('webhookEvents'));",
+											"        jsonData.events.forEach((event) => {",
+											"            pm.expect(events.includes(event)).to.be.true;",
+											"        });",
+											"        pm.expect(!!jsonData.id).to.be.true;",
+											"        pm.expect(jsonData.secretKey).to.includes(pm.environment.get('webhookSecretKey'));",
+											"    });",
+											"    pm.environment.set(\"webhookId\", jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);\r",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);\r",
+											"var min = 1;\r",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 - Delete a webhook  -  with some events",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 200;",
+											"const webhookId = pm.environment.get(\"webhookId\");",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks/{{webhookId}}",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks",
+										"{{webhookId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "201 - Register a webhook -  with some duplicated events",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 201;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains: `, () => {",
+											"        pm.expect(jsonData.name).to.includes(pm.environment.get('webhookName'));",
+											"        pm.expect(jsonData.url).to.includes(pm.environment.get('webhookUrl'));",
+											"        var events = pm.environment.get('actualCreatedEvent');",
+											"        pm.expect(jsonData.events.length === events.length).to.be.true;",
+											"        jsonData.events.forEach((event) => {",
+											"            pm.expect(events.includes(event)).to.be.true;",
+											"        });",
+											"        pm.expect(!!jsonData.id).to.be.true;",
+											"        pm.expect(jsonData.secretKey).to.includes(pm.environment.get('webhookSecretKey'));",
+											"    });",
+											"    pm.environment.set(\"webhookId\", jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");\r",
+											"\r",
+											"let webhookEvents = [\r",
+											"    \"testcase_updated\",\r",
+											"    \"testcase_updated\",\r",
+											"    \"testcase_updated\",\r",
+											"    \"testcase_deleted\",\r",
+											"    \"testcase_approved\"\r",
+											"];\r",
+											"let actualCreatedEvent = [\r",
+											"    \"testcase_updated\",\r",
+											"    \"testcase_deleted\",\r",
+											"    \"testcase_approved\"\r",
+											"];\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));\r",
+											"pm.environment.set(\"actualCreatedEvent\", actualCreatedEvent);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 - Delete a webhook -  with some duplicated events",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 200;",
+											"const webhookId = pm.environment.get(\"webhookId\");",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks/{{webhookId}}",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks",
+										"{{webhookId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "201 - Register a webhook -  with all events",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 201;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains `, () => {",
+											"        pm.expect(jsonData.name).to.includes(pm.environment.get('webhookName'));",
+											"        pm.expect(jsonData.url).to.includes(pm.environment.get('webhookUrl'));",
+											"        var events = JSON.parse(pm.environment.get('webhookEvents'));",
+											"        jsonData.events.forEach((event) => {",
+											"            pm.expect(events.includes(event)).to.be.true;",
+											"        });",
+											"        pm.expect(!!jsonData.id).to.be.true;",
+											"        pm.expect(jsonData.secretKey).to.includes(pm.environment.get('webhookSecretKey'));",
+											"    });",
+											"    pm.environment.set(\"webhookId\", jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(eventsList));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 - Delete a webhook  -  with all events",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 200;",
+											"const webhookId = pm.environment.get(\"webhookId\");",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks/{{webhookId}}",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks",
+										"{{webhookId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "201 - Register a webhook -  with sensitive URL",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 201;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    let jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains: `, () => {",
+											"        pm.expect(jsonData.name).to.includes(pm.environment.get('webhookName'));",
+											"        pm.expect(jsonData.url).to.includes(pm.environment.get('webhookUrl'));",
+											"        var events = JSON.parse(pm.environment.get('webhookEvents'));",
+											"        jsonData.events.forEach((event) => {",
+											"            pm.expect(events.includes(event)).to.be.true;",
+											"        });",
+											"        pm.expect(!!jsonData.id).to.be.true;",
+											"        pm.expect(jsonData.secretKey).to.includes(pm.environment.get('webhookSecretKey'));",
+											"    });",
+											"    pm.environment.set(\"webhookId\", jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);\r",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);\r",
+											"var min = 1;\r",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 - Delete a webhook  -  with sensitive URL",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 200;",
+											"const webhookId = pm.environment.get(\"webhookId\");",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks/{{webhookId}}",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks",
+										"{{webhookId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "201 - Register a webhook -  with length of name is 500",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 201;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    let jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains: `, () => {",
+											"        pm.expect(jsonData.name).to.includes(pm.environment.get('webhookName'));",
+											"        pm.expect(jsonData.url).to.includes(pm.environment.get('webhookUrl'));",
+											"        var events = JSON.parse(pm.environment.get('webhookEvents'));",
+											"        jsonData.events.forEach((event) => {",
+											"            pm.expect(events.includes(event)).to.be.true;",
+											"        });",
+											"        pm.expect(!!jsonData.id).to.be.true;",
+											"        pm.expect(jsonData.secretKey).to.includes(pm.environment.get('webhookSecretKey'));",
+											"    });",
+											"    pm.environment.set(\"webhookId\", jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Vestibulum quam justo, porta quis gravida eget, tempor eu mi. Pellentesque sit amet egestas ipsum. Etiam suscipit orci ut quam dictum luctus. Maecenas commodo vestibulum quam, non porta massa placerat id. Donec faucibus dictum magna, non pellentesque nunc tincidunt vel. Sed arcu lectus, mollis id urna a, interdum dignissim odio. Vivamus fermentum consequat posuere. Sed non sodales sapien. Nullam at sapien nisl. Mauris vel nunc ac odio malesuada varius. Curabitur ante nisi, semper quis felis amet\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);\r",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);\r",
+											"var min = 1;\r",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 - Delete a webhook  -  with length of name is 500",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 200;",
+											"const webhookId = pm.environment.get(\"webhookId\");",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks/{{webhookId}}",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks",
+										"{{webhookId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "201 - Register a webhook -  with length of secret key is 500",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 201;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    let jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains: `, () => {",
+											"        pm.expect(jsonData.name).to.includes(pm.environment.get('webhookName'));",
+											"        pm.expect(jsonData.url).to.includes(pm.environment.get('webhookUrl'));",
+											"        var events = JSON.parse(pm.environment.get('webhookEvents'));",
+											"        jsonData.events.forEach((event) => {",
+											"            pm.expect(events.includes(event)).to.be.true;",
+											"        });",
+											"        pm.expect(!!jsonData.id).to.be.true;",
+											"        pm.expect(jsonData.secretKey).to.includes(pm.environment.get('webhookSecretKey'));",
+											"    });",
+											"    pm.environment.set(\"webhookId\", jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"webhookName\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"Vestibulum quam justo, porta quis gravida eget, tempor eu mi. Pellentesque sit amet egestas ipsum. Etiam suscipit orci ut quam dictum luctus. Maecenas commodo vestibulum quam, non porta massa placerat id. Donec faucibus dictum magna, non pellentesque nunc tincidunt vel. Sed arcu lectus, mollis id urna a, interdum dignissim odio. Vivamus fermentum consequat posuere. Sed non sodales sapien. Nullam at sapien nisl. Mauris vel nunc ac odio malesuada varius. Curabitur ante nisi, semper quis felis amet\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);\r",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);\r",
+											"var min = 1;\r",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 - Delete a webhook  -  with length of secret key is 500",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 200;",
+											"const webhookId = pm.environment.get(\"webhookId\");",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks/{{webhookId}}",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks",
+										"{{webhookId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "201 - Register a webhook -  with length of url is over 500",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 201;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    let jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains: `, () => {",
+											"        pm.expect(jsonData.name).to.includes(pm.environment.get('webhookName'));",
+											"        pm.expect(jsonData.url).to.includes(pm.environment.get('webhookUrl'));",
+											"        var events = JSON.parse(pm.environment.get('webhookEvents'));",
+											"        jsonData.events.forEach((event) => {",
+											"            pm.expect(events.includes(event)).to.be.true;",
+											"        });",
+											"        pm.expect(!!jsonData.id).to.be.true;",
+											"        pm.expect(jsonData.secretKey).to.includes(pm.environment.get('webhookSecretKey'));",
+											"    });",
+											"    pm.environment.set(\"webhookId\", jsonData.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"webhookName\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://crawler-test.com/urls/page_url_length/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"secret\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);\r",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);\r",
+											"var min = 1;\r",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 - Delete a webhook -  with length of url is over 500",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 200;",
+											"const webhookId = pm.environment.get(\"webhookId\");",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks/{{webhookId}}",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks",
+										"{{webhookId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401 - Register a webhook - invalid access token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 401;",
+											"if (pm.response.code === RESPONSE_CODE) {",
+											"    //other mark failed",
+											"    pm.test(\"Response status: \" + pm.response.code, function() {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}111"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - with empty name",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('name is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"\");",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{tokenType}} {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - without name",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('name is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{tokenType}} {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - name is over max length 500 characters",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('The name is over 500 characters.');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Vestibulum quam justo, porta quis gravida eget, tempor eu mi. Pellentesque sit amet egestas ipsum. Etiam suscipit orci ut quam dictum luctus. Maecenas commodo vestibulum quam, non porta massa placerat id. Donec faucibus dictum magna, non pellentesque nunc tincidunt vel. Sed arcu lectus, mollis id urna a, interdum dignissim odio. Vivamus fermentum consequat posuere. Sed non sodales sapien. Nullam at sapien nisl. Mauris vel nunc ac odio malesuada varius. Curabitur ante nisi, semper quis felis amet.\");",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - with empty URL",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('url is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");",
+											"pm.environment.set(\"webhookUrl\", \"\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - without URL",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('url is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - without events",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('events is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");\r",
+											"\r",
+											"let webhookEvents = [];\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n\t\"name\": \"{{webhookName}}\",\r\n\t\"url\": \"{{webhookUrl}}\",\r\n\t\"events\": {{webhookEvents}},\r\n\t\"secretKey\": \"{{webhookSecretKey}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - invalid events",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('Events with value ' + pm.environment.get('invalidWebhookEventType') + ' are invalid');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");\r",
+											"\r",
+											"pm.environment.set(\"invalidWebhookEventType\", \"invalid_testcase_created\");\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);\r",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);\r",
+											"var min = 1;\r",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));\r",
+											"webhookEvents.push(pm.environment.get('invalidWebhookEventType'));\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n\t\"name\": \"{{webhookName}}\",\r\n\t\"url\": \"{{webhookUrl}}\",\r\n\t\"events\": {{webhookEvents}},\r\n\t\"secretKey\": \"{{webhookSecretKey}}\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook -  No Secret Key",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('secretKey is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);\r",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);\r",
+											"var min = 1;\r",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}}\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook -  Secret Key empty",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('secretKey is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);\r",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);\r",
+											"var min = 1;\r",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - with uppercase on Secret Key property",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function () {",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('secretKey is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"SECRETKEY\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook -  Secret Key is over max length 500 characters",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('The secretKey is over 500 characters.');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");\r",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");\r",
+											"pm.environment.set(\"webhookSecretKey\", \"Vestibulum quam justo, porta quis gravida eget, tempor eu mi. Pellentesque sit amet egestas ipsum. Etiam suscipit orci ut quam dictum luctus. Maecenas commodo vestibulum quam, non porta massa placerat id. Donec faucibus dictum magna, non pellentesque nunc tincidunt vel. Sed arcu lectus, mollis id urna a, interdum dignissim odio. Vivamus fermentum consequat posuere. Sed non sodales sapien. Nullam at sapien nisl. Mauris vel nunc ac odio malesuada varius. Curabitur ante nisi, semper quis felis amet.\");\r",
+											"\r",
+											"let eventsList = pm.environment.get(\"webhookEventList\");\r",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);\r",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);\r",
+											"var min = 1;\r",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));\r",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - with uppercase on name property",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('name is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"\");",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"NAME\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - with uppercase on URL property",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('url is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{tokenType}} {{accessToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"URL\": \"{{webhookUrl}}\",\n\t\"events\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 - Register a webhook - with uppercase on events property",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const RESPONSE_CODE = 400;",
+											"const result = pm.response.code === RESPONSE_CODE;",
+											"",
+											"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+											"    pm.response.to.have.status(RESPONSE_CODE);",
+											"});",
+											"",
+											"if (result) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(RESPONSE_CODE);",
+											"    });",
+											"    pm.test(`Response data contains message: ${jsonData.message}`, () => {",
+											"        pm.expect(jsonData.message).to.includes('events is required');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"webhookName\", \"Webhook\");",
+											"pm.environment.set(\"webhookUrl\", \"http://httpbin.org/\");",
+											"pm.environment.set(\"webhookSecretKey\", \"secretKey\");",
+											"",
+											"let eventsList = pm.environment.get(\"webhookEventList\");",
+											"eventsList = eventsList.sort(() => Math.random() - 0.5);",
+											"var randomNumber = Math.floor(Math.random() * eventsList.length);",
+											"var min = 1;",
+											"let webhookEvents = eventsList.slice(0, Math.max(randomNumber, min));",
+											"pm.environment.set(\"webhookEvents\", JSON.stringify(webhookEvents));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{tokenType}} {{accessToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"{{webhookName}}\",\n\t\"url\": \"{{webhookUrl}}\",\n\t\"EVENTS\": {{webhookEvents}},\n\t\"secretKey\": \"{{webhookSecretKey}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/api/v3/webhooks",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"api",
+										"v3",
+										"webhooks"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Clean up",
+					"item": [
+						{
+							"name": "200 - Cleanup- Logout user admin",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"",
+											"const envVariables = ['csrfToken', 'accessToken', 'tokenType', 'qtestUserCookie', 'webhookEventList', 'webhookName', 'webhookUrl', 'webhookEvents', 'webhookSecretKey', 'actualCreatedEvent', 'invalidWebhookEventType', 'webhookId']",
+											"",
+											"if (pm.response.code === 200) {",
+											"",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"    ",
+											"    for(const enVar of envVariables){",
+											"        pm.environment.unset(enVar);    ",
+											"    }",
+											"    ",
+											"} else {",
+											"    //other mark failed",
+											"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"}",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n}"
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/oauth/revoke",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"oauth",
+										"revoke"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

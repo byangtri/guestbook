@@ -1,0 +1,810 @@
+{
+	"info": {
+		"_postman_id": "44ce598d-d9ef-4b45-a73f-627e6de353fa",
+		"name": "Login and Logout",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "200 - Login - Success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "68aaacff-7e38-4204-aac9-b2b2ba38a14d",
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    //assert status",
+									"    pm.test(\"Response status: \" + pm.response.code + \" -  Login\", function() {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    //assert response body",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+									"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+									"} else {",
+									"    //other mark failed",
+									"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basic dGFtdG1uZ3V5ZW46"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{qtestUrl}}/oauth/token",
+							"host": [
+								"{{qtestUrl}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 - Login - Invalid grant_type property",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5e8a8fab-3f62-42df-ac85-9332efb5f2e4",
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 400) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.test(\"Response status: \" + pm.response.code + \" - Login\", function() {",
+									"        pm.response.to.have.status(400);",
+									"    });",
+									"    //assert response body",
+									"    pm.test(\"Has 'error' in response body - error: \" + jsonData.error, function() {",
+									"        pm.expect(pm.response.text()).to.include(\"error\");",
+									"    });",
+									"    pm.test(\"Has 'error_description' in response body - error_description: \" + jsonData.error_description, function() {",
+									"        pm.expect(pm.response.text()).to.include(\"error_description\");",
+									"    });",
+									"} else {",
+									"    //other mark failed",
+									"    pm.test(\"Response code: \" + pm.response.code + \"\\n Response body:\" + pm.response.text(), function() {",
+									"        pm.response.to.have.status(400);",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basic dGFtdG1uZ3V5ZW46"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password111",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{qtestUrl}}/oauth/token",
+							"host": [
+								"{{qtestUrl}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 - Login - Invalid username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "62367b37-e485-4b90-b330-0fbcb311e4e3",
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 400) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.test(\"Response status: \" + pm.response.code + \" - Login\", function() {",
+									"        pm.response.to.have.status(400);",
+									"    });",
+									"    //assert response body",
+									"    pm.test(\"Has 'error' in response body - error: \" + jsonData.error, function() {",
+									"        pm.expect(pm.response.text()).to.include(\"error\");",
+									"    });",
+									"    pm.test(\"Has 'error_description' in response body - error_description: \" + jsonData.error_description, function() {",
+									"        pm.expect(pm.response.text()).to.include(\"error_description\");",
+									"    });",
+									"} else {",
+									"    //other mark failed",
+									"    pm.test(\"Response code: \" + pm.response.code + \"\\n Response body:\" + pm.response.text(), function() {",
+									"        pm.response.to.have.status(400);",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basic dGFtdG1uZ3V5ZW46"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}1111",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{qtestUrl}}/oauth/token",
+							"host": [
+								"{{qtestUrl}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 - Login - Invalid password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "bec8b7c5-fccc-4e8b-8ecb-41d9f0d90a38",
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 400) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.test(\"Response status: \" + pm.response.code + \" - Login\", function() {",
+									"        pm.response.to.have.status(400);",
+									"    });",
+									"    //assert response body",
+									"    pm.test(\"Has 'error' in response body - error: \" + jsonData.error, function() {",
+									"        pm.expect(pm.response.text()).to.include(\"error\");",
+									"    })",
+									"    pm.test(\"Has 'error_description' in response body - error_description: \" + jsonData.error_description, function() {",
+									"        pm.expect(pm.response.text()).to.include(\"error_description\");",
+									"    });",
+									"} else {",
+									"    //other mark failed",
+									"    pm.test(\"Response code: \" + pm.response.code + \"\\n Response body:\" + pm.response.text(), function() {",
+									"        pm.response.to.have.status(400);",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basic dGFtdG1uZ3V5ZW46"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}1111",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{qtestUrl}}/oauth/token",
+							"host": [
+								"{{qtestUrl}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 - Login - No authorization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "aabaf5fd-aaf4-4393-9ea0-e4901aaebd04",
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 401) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.test(\"Response status: \" + pm.response.code + \" - Login\", function(){",
+									"        pm.response.to.have.status(401);",
+									"    });",
+									"    //assert response body",
+									"    pm.test(\"Has 'error' in response body - error: \" + jsonData.error  , function(){",
+									"        pm.expect(pm.response.text()).to.include(\"error\");",
+									"    })",
+									"    pm.test(\"Has 'error_description' in response body - error_description: \" + jsonData.error_description, function() {",
+									"        pm.expect(pm.response.text()).to.include(\"error_description\");",
+									"    });",
+									"} else {",
+									"    //other mark failed",
+									"    pm.test(\"Response code: \" + pm.response.code +\"\\n Response body:\" + pm.response.text(), function() {",
+									"        pm.response.to.have.status(401);",
+									"    });",
+									"}",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{qtestUrl}}/oauth/token",
+							"host": [
+								"{{qtestUrl}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 - Login - Invalid authorization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cca4b54f-18f5-4ca0-9104-971dc9d66230",
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 401) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.test(\"Response status: \" + pm.response.code + \" - Login\", function() {",
+									"        pm.response.to.have.status(401);",
+									"    });",
+									"    //assert response body",
+									"    pm.test(\"Has 'error' in response body - error: \" + jsonData.error, function() {",
+									"        pm.expect(pm.response.text()).to.include(\"error\");",
+									"    });",
+									"    pm.test(\"Has 'error_description' in response body - error_description: \" + jsonData.error_description, function() {",
+									"        pm.expect(pm.response.text()).to.include(\"error_description\");",
+									"    });",
+									"} else {",
+									"    //other mark failed",
+									"    pm.test(\"Response code: \" + pm.response.code + \"\\n Response body:\" + pm.response.text(), function() {",
+									"        pm.response.to.have.status(401);",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basis dGFtd1234G1uZ3V5ZW46wwwww"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{qtestUrl}}/oauth/token",
+							"host": [
+								"{{qtestUrl}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 - Login - Wrong path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 404) {",
+									"    pm.test(\"Response code: \" + pm.response.code +\" - Login\", function() {",
+									"        pm.response.to.have.status(404);",
+									"    });",
+									"} else {",
+									"    pm.test(\"Response code: \" + pm.response.code +\"\\n Response body:\" + pm.response.text(), function() {",
+									"        pm.response.to.have.status(404);",
+									"    });",
+									"}"
+								],
+								"id": "50ae2fc9-8daf-4dd5-8116-f209cb5bb787",
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basic dGFtdG1uZ3V5ZW46"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{qtestUrl}}/oauth/token1111",
+							"host": [
+								"{{qtestUrl}}"
+							],
+							"path": [
+								"oauth",
+								"token1111"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "728ec6c1-c301-422c-b313-df78df24494b",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "69180a48-7aab-481b-b8c6-79ee57ca977c",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Logout",
+			"item": [
+				{
+					"name": "Precondition",
+					"item": [
+						{
+							"name": "200 - Precondition - Login success",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "68aaacff-7e38-4204-aac9-b2b2ba38a14d",
+										"type": "text/javascript",
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    //assert status",
+											"    pm.test(\"Response status: \" + pm.response.code + \" -  Login\", function() {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"    //assert response body",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+											"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+											"} else {",
+											"    //other mark failed",
+											"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Basic dGFtdG1uZ3V5ZW46"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "password",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/oauth/token",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Main",
+					"item": [
+						{
+							"name": "201 - Logout  - Success",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "9d5dd92b-faf1-4ded-9727-85916afabc1c",
+										"type": "text/javascript",
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"    ",
+											"} else {",
+											"    //other mark failed",
+											"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"}",
+											""
+										]
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "ee2576af-fdda-4dcc-a0f2-f821eb81fba7",
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n}"
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/oauth/revoke",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"oauth",
+										"revoke"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401 - Logout - Invalid token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "ec17dee5-0334-4eb9-bd98-baed15910b91",
+										"type": "text/javascript",
+										"exec": [
+											"if (pm.response.code === 401) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.test(\"Response code: \" + pm.response.code, function(){",
+											"        pm.response.to.have.status(401);",
+											"    });",
+											"    //assert response body",
+											"    pm.test(\"Has 'error' in response body - error: \" + jsonData.error, function() {",
+											"        pm.expect(pm.response.text()).to.include(\"error\");",
+											"    });",
+											"    pm.test(\"Has 'error_description' in response body - error_description: \" + jsonData.error_description, function() {",
+											"        pm.expect(pm.response.text()).to.include(\"error_description\");",
+											"    });",
+											"} else {",
+											"    //other mark failed",
+											"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+											"        pm.response.to.have.status(401);",
+											"    });",
+											"}",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{tokenType}} {{accessToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{qtestUrl}}/oauth/revoke",
+									"host": [
+										"{{qtestUrl}}"
+									],
+									"path": [
+										"oauth",
+										"revoke"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "728ec6c1-c301-422c-b313-df78df24494b",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "69180a48-7aab-481b-b8c6-79ee57ca977c",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "3bea8f1b-73a5-404c-89de-99b2ef440b74",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "a993efa6-093d-4e76-8c41-402bd1700ebd",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

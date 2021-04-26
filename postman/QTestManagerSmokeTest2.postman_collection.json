@@ -1,0 +1,3853 @@
+{
+	"info": {
+		"_postman_id": "ed2639b6-0a30-4f55-985e-7eddfa2291e8",
+		"name": "QtestManagerSmokeTest2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SmokeTest2",
+			"item": [
+				{
+					"name": "Uploads an Attachment to an Object",
+					"item": [
+						{
+							"name": "Precondition",
+							"item": [
+								{
+									"name": "200 - Precondition - Login",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+													"    ",
+													"    // Create login cookie of user",
+													"    const rawStr = CryptoJS.enc.Utf8.parse(jsonData.access_token);",
+													"    const base64 = CryptoJS.enc.Base64.stringify(rawStr);",
+													"    pm.environment.set(\"qtestUserCookie\", `UserContextToken=${base64}`);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get site admin id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //get response body",
+													"    var jsonData = pm.response.json();",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    pm.test(\"Response data contains site admin user property\", function() {",
+													"        pm.expect(jsonData.items[0].username).to.eql(pm.environment.get(\"username\"));",
+													"        pm.expect(pm.response.text()).to.include(\"email\");",
+													"        pm.expect(jsonData.items[0].first_name).to.eql(pm.environment.get(\"firstName\"));",
+													"        pm.expect(jsonData.items[0].last_name).to.eql(pm.environment.get(\"lastName\"));",
+													"        pm.expect(pm.response.text()).to.include(\"status\");",
+													"        pm.expect(pm.response.text()).to.include(\"timezone_offset\");",
+													"        pm.expect(pm.response.text()).to.include(\"country_name\");",
+													"    });",
+													"    ",
+													"    pm.environment.set(\"siteAdminId\", jsonData.items[0].id);",
+													"",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"first_name\": \"{{firstName}}\",\r\n  \"last_name\": \"{{lastName}}\",\r\n  \"email\": \"{{username}}\",\r\n  \"password\": \"{{password}}\"\r\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/users/search?username={{username}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"users",
+												"search"
+											],
+											"query": [
+												{
+													"key": "username",
+													"value": "{{username}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 201-Created",
+													"pm.test(`Response status should be 201-Created ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"",
+													"if (result) {",
+													"   //get response body",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"projectId1\", jsonData.id);",
+													"    pm.environment.set(\"projectStartDate\", jsonData.start_date);",
+													"    pm.environment.set(\"projectEndDate\", jsonData.end_date);",
+													"}",
+													""
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"let startDate = new Date();",
+													"let endDate = new Date();",
+													"endDate.setDate(startDate.getDate() + 365);",
+													"",
+													"// Function to add 0 before datetime value if it is less than 10",
+													"Number.prototype.padLeft = function(base, chr) {",
+													"    var len = (String(base || 10).length - String(this).length) + 1;",
+													"    return len > 0 ? new Array(len).join(chr || '0') + this : this;",
+													"};",
+													"",
+													"// Generate dynamic string for ProfileName",
+													"let uniqueString = new Date(),",
+													"    uniqueStringFormat = [(uniqueString.getMonth() + 1).padLeft(),",
+													"        uniqueString.getDate().padLeft(),",
+													"        uniqueString.getFullYear(),",
+													"    ].join('') + '-' + [uniqueString.getHours().padLeft(),",
+													"        uniqueString.getMinutes().padLeft(),",
+													"        uniqueString.getSeconds().padLeft(),",
+													"        uniqueString.getMilliseconds().padLeft()",
+													"    ].join('');",
+													"",
+													"const projectName = \"qTest API - Postman\";",
+													"pm.environment.set(\"projectName\", `${projectName}${uniqueStringFormat}`);",
+													"",
+													"pm.environment.set(\"startDate\", startDate.toISOString());",
+													"pm.environment.set(\"endDate\", endDate.toISOString());",
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{projectName}}\",\n  \"description\": \"Description of qTest API - Postman\",\n  \"start_date\": \"{{startDate}}\",\n  \"end_date\": \"{{endDate}}\",\n  \"admins\": [\n     \"{{username}}\"\n  ],\n  \"automation\": true\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Queries Users by Project Name",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code = RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"",
+													"if (result) {",
+													"    //get response body",
+													"    let jsonData = pm.response.json();",
+													"",
+													"    //assert status",
+													"    pm.test(\"Response statusshould be 200-OK\", () => {",
+													"        pm.response.to.have.status(RESPONSE_CODE);",
+													"    });",
+													"",
+													"    pm.environment.set(\"userList\", jsonData.items);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/search/user?projectName={{projectName}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"search",
+												"user"
+											],
+											"query": [
+												{
+													"key": "projectName",
+													"value": "{{projectName}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get release fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const PREFIX = \"fieldIdRelease\";",
+													"    let jsonData = pm.response.json();",
+													"",
+													"    jsonData.forEach(function(field) {",
+													"        pm.environment.set(PREFIX + field.label.replace(/\\s/g, \"\"), field.id);",
+													"        if (field.allowed_values) {",
+													"            field.allowed_values.forEach(function(item) {",
+													"                const fieldValueId = PREFIX + field.label + item.label.replace(/\\s/g, \"\");",
+													"                pm.environment.set(fieldValueId, item.value);",
+													"            });",
+													"        }",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/settings/releases/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"settings",
+												"releases",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Create release",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"newReleaseId\", jsonData.id);",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"releaseName\", \"Release having full info\");",
+													"pm.environment.set(\"releaseStartDate\", (new Date()).toISOString());",
+													"pm.environment.set(\"releaseEndDate\", (new Date()).toISOString());",
+													"pm.environment.set(\"releaseDescription\", \"Description of the release\");",
+													"pm.environment.set(\"releaseNote\", \"Note of the release\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{releaseName}}\",\n    \"properties\": [\n      {\n            \"field_id\": {{fieldIdReleaseStatus}},\n            \"field_value\": \"{{fieldIdReleaseStatusInProgress}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseStartDate}},\n            \"field_value\": \"{{startDate}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseEndDate}},\n            \"field_value\": \"{{endDate}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseDescription}},\n            \"field_value\": \"{{releaseDescription}}\"\n        },\n        {\n            \"field_id\": {{fieldIdReleaseReleaseNote}},\n            \"field_value\": \"{{releaseNote}}\"\n        }\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/releases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"releases"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get build fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"",
+													"    const PREFIX = \"fieldIdBuild\";",
+													"    let jsonData = pm.response.json();",
+													"",
+													"    jsonData.forEach(function(field) {",
+													"        pm.environment.set(PREFIX + field.label.replace(/\\s/g, \"\"), field.id);",
+													"        if (field.allowed_values) {",
+													"            field.allowed_values.forEach(function(item) {",
+													"                const fieldValueId = PREFIX + field.label + item.label.replace(/\\s/g, \"\");",
+													"                pm.environment.set(fieldValueId, item.value);",
+													"            });",
+													"        }",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/settings/builds/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"settings",
+												"builds",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Create build",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    ",
+													"    pm.environment.set(\"newBuildId1\", jsonData.id);",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"let builDate = pm.environment.get(\"releaseStartDate\");",
+													"pm.environment.set(\"buildDate\", builDate);",
+													"pm.environment.set(\"buildName\", \"Build 1\");",
+													"pm.environment.set(\"buildNote\", \"Note of Build 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{buildName}}\",\n    \"properties\": [\n      {\n            \"field_id\": {{fieldIdBuildStatus}},\n            \"field_value\": \"{{fieldIdBuildStatusInProgress}}\"\n        },\n        {\n            \"field_id\": {{fieldIdBuildBuildDate}},\n            \"field_value\": \"{{buildDate}}\"\n        },\n        {\n            \"field_id\": {{fieldIdBuildBuildNote}},\n            \"field_value\": \"{{buildNote}}\"\n        }\n    ],\n    \"release\": {\n      \"id\": \"{{newReleaseId}}\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/builds",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"builds"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create a Module",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 201-Created",
+													"pm.test(`Response status should be 201-Created ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    ",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"newModuleId1\", jsonData.id);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Module 1\",\r\n  \"description\": \"Description of Module 1\",\r\n  \"shared\": false\r\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/modules",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"modules"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get requirement fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const PREFIX = \"fieldIdReq\";",
+													"    let jsonData = pm.response.json();",
+													"    let userList = pm.environment.get(\"userList\");",
+													"    pm.environment.set(\"requirementFields\", jsonData);",
+													"",
+													"    jsonData.forEach((field) => {",
+													"        pm.environment.set(PREFIX + field.label.replace(/[\\s\\/-]/g, \"\"), field.id);",
+													"",
+													"        if (field.hasOwnProperty(\"allowed_values\")) {",
+													"            let fieldValueId = \"\";",
+													"",
+													"            field.allowed_values.forEach((item, index) => {",
+													"",
+													"                switch (field.label) {",
+													"                    case \"Assigned To\":",
+													"",
+													"                        userList.forEach((user, userIndex) => {",
+													"                            // Just save variables of users who have admin permission",
+													"                            if (item.label === `${user.first_name} ${user.last_name}`) {",
+													"                                if (user.username === pm.environment.get(\"username\")) {",
+													"                                    // UserTest: user who directly affects to the test case",
+													"                                    fieldValueId = PREFIX + field.label.replace(/[\\s\\/-]/g, \"\") + `UserTest`;",
+													"                                    pm.environment.set(\"userTestFullName\", item.label);",
+													"                                } else {",
+													"                                    // Other users who have admin permission",
+													"                                    fieldValueId = PREFIX + field.label.replace(/[\\s\\/-]/g, \"\") + item.label.replace(/[\\s\\/-]/g, \"\");",
+													"                                }",
+													"                                pm.environment.set(fieldValueId, item.value);",
+													"                            }",
+													"                        });",
+													"                        break;",
+													"",
+													"                    default:",
+													"                        fieldValueId = PREFIX + field.label.replace(/[\\s\\/-]/g, \"\") + item.label.replace(/[\\s\\/-]/g, \"\");",
+													"                        pm.environment.set(fieldValueId, item.value);",
+													"                        break;",
+													"                }",
+													"",
+													"            });",
+													"        }",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/settings/requirements/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"settings",
+												"requirements",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Create requirement",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"",
+													"    let jsonData = pm.response.json();",
+													"",
+													"    pm.environment.set(\"newReqId1\", jsonData.id);",
+													"    pm.environment.set(\"reqInfo1\", jsonData);",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"reqName\", \"Requirement 1\");",
+													"pm.environment.set(\"reqDescription\", \"Description of Requirement 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{reqName}}\",\n  \"properties\": [\n    {\n        \"field_id\": \"{{fieldIdReqStatus}}\",\n        \"field_value\": \"{{fieldIdReqStatusInProgress}}\"\n    },\n    {\n        \"field_id\": \"{{fieldIdReqPriority}}\",\n        \"field_value\": \"{{fieldIdReqPriorityShouldhave}}\"\n    },\n    {\n        \"field_id\": \"{{fieldIdReqType}}\",\n        \"field_value\": \"{{fieldIdReqTypeNonfunctional}}\"\n    },\n    {\n        \"field_id\": \"{{fieldIdReqAssignedTo}}\",\n        \"field_value\": \"[{{fieldIdReqAssignedToUserTest}}]\"\n    },\n    {\n        \"field_id\": \"{{fieldIdReqDescription}}\",\n        \"field_value\": \"{{reqDescription}}\"\n    }\n  ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/requirements?parentId={{newModuleId1}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"requirements"
+											],
+											"query": [
+												{
+													"key": "parentId",
+													"value": "{{newModuleId1}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get Test Case fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"",
+													"    const PREFIX = \"fieldIdTestCase\";",
+													"    var jsonData = pm.response.json();",
+													"    var userList = pm.environment.get(\"userList\");",
+													"    pm.environment.set(\"testCaseFields\", jsonData);",
+													"",
+													"    jsonData.forEach((field) => {",
+													"        pm.environment.set(PREFIX + field.label.replace(/[\\s\\/-]/g, \"\"), field.id);",
+													"",
+													"        if (field.allowed_values) {",
+													"            var fieldValueId = \"\";",
+													"",
+													"            field.allowed_values.forEach((item, index) => {",
+													"",
+													"                switch (field.label) {",
+													"                    case \"Assigned To\":",
+													"                        userList.forEach((user, userIndex) => {",
+													"                            // Just save variables of users who have admin permission",
+													"                            if (item.label === `${user.first_name} ${user.last_name}`) {",
+													"                                if (user.username === pm.environment.get(\"username\")) {",
+													"                                    // UserTest: user who directly affects to the test case",
+													"                                    fieldValueId = PREFIX + field.label.replace(/[\\s\\/-]/g, \"\") + `UserTest`;",
+													"                                    pm.environment.set(\"userTestFullName\", item.label);",
+													"                                } else {",
+													"                                    // Other users who have admin permission",
+													"                                    fieldValueId = PREFIX + field.label.replace(/[\\s\\/-]/g, \"\") + item.label.replace(/[\\s\\/-]/g, \"\");",
+													"                                }",
+													"                                pm.environment.set(fieldValueId, item.value);",
+													"                            }",
+													"                        });",
+													"                        break;",
+													"",
+													"                    default:",
+													"                        fieldValueId = PREFIX + field.label.replace(/[\\s\\/-]/g, \"\") + item.label.replace(/[\\s\\/-]/g, \"\");",
+													"                        pm.environment.set(fieldValueId, item.value);",
+													"                        break;",
+													"                }",
+													"",
+													"            });",
+													"        }",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/settings/test-cases/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"settings",
+												"test-cases",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Create Manual Test Case",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"newTestCaseId1\", jsonData.id);",
+													"    pm.environment.set(\"testCaseInfo1\", jsonData);",
+													"    pm.environment.set(\"testCase1Steps\", jsonData.test_steps);",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"testCaseName1\", \"Test Case 1\");",
+													"pm.environment.set(\"testCaseDescription1\", \"Description of Test Case 1\");",
+													"pm.environment.set(\"testCasePrecondition1\", \"Precondition of Test Case 1\");",
+													"",
+													"pm.environment.set(\"testStepDescription1\", \"Description of test step 1\");",
+													"pm.environment.set(\"testStepExpected1\", \"Expected of test step 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{testCaseName1}}\",\n    \"properties\": [\n        {\n            \"field_id\": \"{{fieldIdTestCaseAutomation}}\",\n            \"field_value\": \"{{fieldIdTestCaseAutomationNo}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseStatus}}\",\n            \"field_value\": \"{{fieldIdTestCaseStatusInProgress}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseType}}\",\n            \"field_value\": \"{{fieldIdTestCaseTypePerformance}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseAssignedTo}}\",\n            \"field_value\": \"[{{fieldIdTestCaseAssignedToUserTest}}]\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCaseDescription}}\",\n            \"field_value\": \"{{testCaseDescription1}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCasePrecondition}}\",\n            \"field_value\": \"{{testCasePrecondition1}}\"\n        },\n        {\n            \"field_id\": \"{{fieldIdTestCasePriority}}\",\n            \"field_value\": \"{{fieldIdTestCasePriorityHigh}}\"\n        }\n    ],\n    \"test_steps\": [\n        {\n            \"description\": \"{{testStepDescription1}}\",\n            \"expected\": \"{{testStepExpected1}}\",\n            \"attachments\": []\n        }\n    ],\n    \"parent_id\": \"{{newModuleId1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/test-cases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"test-cases"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Approve Manual Test Case",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"if(result) {",
+													"",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"testCaseInfo1\", jsonData);",
+													"",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/test-cases/{{newTestCaseId1}}/approve",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"test-cases",
+												"{{newTestCaseId1}}",
+												"approve"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Create Automation Test Case",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"",
+													"    let jsonData = pm.response.json();",
+													"    ",
+													"    pm.environment.set(\"newTestCaseId2\", jsonData.id);",
+													"    pm.environment.set(\"testCaseInfo2\", jsonData);",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"testCaseName2\", \"Test Case Automation 2\");",
+													"pm.environment.set(\"testCaseDescription2\", \"Description of Test Case Automation 2\");",
+													"pm.environment.set(\"testCasePrecondition2\", \"Precondition of Test Case Automation 2\");",
+													"",
+													"pm.environment.set(\"testCaseAutomationContent\", \"Automation Content of Test Case Automation 2\");",
+													"",
+													"pm.environment.set(\"testStepDescription1\", \"Description of test step 1\");",
+													"pm.environment.set(\"testStepExpected1\", \"Expected of test step 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"{{testCaseName2}}\",\n  \"properties\": [\n    {\n        \"field_id\": \"{{fieldIdTestCaseAutomation}}\",\n        \"field_value\": \"{{fieldIdTestCaseAutomationYes}}\"\n    },\n    {\n        \"field_id\": \"{{fieldIdTestCaseAutomationContent}}\",\n        \"field_value\": \"{{testCaseAutomationContent}}\"\n    },\n    {\n        \"field_id\": \"{{fieldIdTestCaseStatus}}\",\n        \"field_value\": \"{{fieldIdTestCaseStatusInProgress}}\"\n    },\n    {\n        \"field_id\": \"{{fieldIdTestCaseType}}\",\n        \"field_value\": \"{{fieldIdTestCaseTypePerformance}}\"\n    },\n    {\n        \"field_id\": \"{{fieldIdTestCaseAssignedTo}}\",\n        \"field_value\": \"[{{fieldIdTestCaseAssignedToUserTest}}]\"\n    },\n    {\n        \"field_id\": \"{{fieldIdTestCaseDescription}}\",\n        \"field_value\": \"{{testCaseDescription2}}\"\n    },\n    {\n        \"field_id\": \"{{fieldIdTestCasePrecondition}}\",\n        \"field_value\": \"{{testCasePrecondition2}}\"\n    },\n    {\n        \"field_id\": \"{{fieldIdTestCasePriority}}\",\n        \"field_value\": \"{{fieldIdTestCasePriorityHigh}}\"\n    }\n  ],\n  \"test_steps\": [\n    {\n      \"description\": \"{{testStepDescription1}}\",\n      \"expected\": \"{{testStepExpected1}}\",\n      \"attachments\": []\n    }\n  ],\n  \"parent_id\": \"{{newModuleId1}}\"\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/test-cases",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"test-cases"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get Defect fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"",
+													"    const PREFIX = \"fieldIdDefect\";",
+													"    var jsonData = pm.response.json();",
+													"    var userList = pm.environment.get(\"userList\");",
+													"",
+													"    jsonData.forEach((field) => {",
+													"        if (field.label === \"Summary\" || field.label === \"Description\") {",
+													"            pm.environment.set(PREFIX + field.label.replace(/[\\s\\/-]/g, \"\"), field.id);",
+													"        }",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/settings/defects/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"settings",
+												"defects",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Submit a defect",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 201-Created",
+													"pm.test(`Response status should be 201-Created ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"",
+													"    let jsonData = pm.response.json();",
+													"    ",
+													"    pm.environment.set(\"newDefectId1\", jsonData.id);",
+													"    pm.environment.set(\"defectInfo1\", jsonData);",
+													"}"
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"defectSummary\", \"Summary of Defect 1\");",
+													"pm.environment.set(\"defectDescription\", \"Description of Defect 1\");"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"properties\": [\n    {\n      \"field_id\": \"{{fieldIdDefectSummary}}\",\n      \"field_value\": \"{{defectSummary}}\"\n    },\n    {\n      \"field_id\": \"{{fieldIdDefectDescription}}\",\n      \"field_value\": \"{{defectDescription}}\"\n    }\n  ]\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/defects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"defects"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create a test run",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"if(result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"testRunId1\", jsonData.id);",
+													"    pm.environment.set(\"testRunPid1\", jsonData.pid);",
+													"    pm.environment.set(\"testRunInfo1\", jsonData);",
+													"",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"pm.environment.set(\"testRunName\", \"Test Run 1\");",
+													"",
+													"var today = new Date();",
+													"pm.environment.set(\"startDate1\", today.toISOString());",
+													"today.setDate(today.getDate() + 10);",
+													"pm.environment.set(\"endDate1\", today.toISOString());"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{testRunName}}\",\n  \"test_case\": {\n    \"id\": {{newTestCaseId1}}\n  }\n  \n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/test-runs",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"test-runs"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get Test Run Statuses",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"if(result) {",
+													"    let jsonData = pm.response.json();",
+													"",
+													"    jsonData.forEach((status, index) => {",
+													"",
+													"        switch (status.name) {",
+													"            case \"Passed\":",
+													"                pm.environment.set(\"statusPassedId\", status.id);",
+													"                break;",
+													"            case \"Failed\":",
+													"                pm.environment.set(\"statusFailedId\", status.id);",
+													"                break;",
+													"            case \"Incomplete\":",
+													"                pm.environment.set(\"statusIncompleteId\", status.id);",
+													"                break;",
+													"            case \"Blocked\":",
+													"                pm.environment.set(\"statusBlockedId\", status.id);",
+													"                break;",
+													"            case \"Unexecuted\":",
+													"                pm.environment.set(\"statusUnexecutedId\", status.id);",
+													"                break;",
+													"        }",
+													"    });",
+													"",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/test-runs/execution-statuses",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"test-runs",
+												"execution-statuses"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Submit a test log",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"if(result) {",
+													"",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"testLogId1\", jsonData.id);",
+													"    pm.environment.set(\"testLogInfo1\", jsonData);",
+													"} "
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"let startDate = new Date();",
+													"let endDate = new Date();",
+													"endDate.setDate(startDate.getDate() + 5);",
+													"pm.environment.set(\"exeStartDate\", startDate.toISOString());",
+													"pm.environment.set(\"exeEndDate\", endDate.toISOString());",
+													"pm.environment.set(\"note\", \"Test log note\");",
+													"pm.environment.set(\"testStepDescription1\", \"Description of test step 1\");",
+													"pm.environment.set(\"testStepExpected1\", \"Expected Result of test step 1\");",
+													"pm.environment.set(\"testStepActual1\", \"Actual Result of test step 1\");"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"exe_start_date\": \"{{exeStartDate}}\",\n    \"exe_end_date\": \"{{exeEndDate}}\",\n    \"note\": \"{{note}}\",\n    \"planned_exe_time\": 0,\n    \"actual_exe_time\": 0,\n    \"status\": {\n        \"id\": {{statusFailedId}}\n    }\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/test-runs/{{testRunId1}}/test-logs",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"test-runs",
+												"{{testRunId1}}",
+												"test-logs"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get test step log",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"pm.test(`Status code is ${pm.response.code}${result ? '' : ' and response body is: ' + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"    pm.environment.set('testStepLogsId', jsonData.test_step_logs[0].test_step_log_id);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/test-runs/{{testRunId1}}/test-logs/{{testLogId1}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"test-runs",
+												"{{testRunId1}}",
+												"test-logs",
+												"{{testLogId1}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Main",
+							"item": [
+								{
+									"name": "201 - Upload an Attachment to an Object - Releases - Success",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"pm.environment.set(\"objectType\", \"releases\");",
+													"pm.environment.set(\"attachmentFileName\", \"sample_file_name.txt\");"
+												]
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"const expectedContentType = \"application/json, text/plain\";",
+													"const fileName = pm.environment.get(\"attachmentFileName\");",
+													"const expectedLink = [];",
+													"",
+													"// Verify that the returned status should be 201-Created",
+													"pm.test(`Response status should be 201-Created ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"",
+													"    // Verify that links should be returned correctly",
+													"    pm.test(\"Links should be returned correctly\", () => {",
+													"        pm.expect(jsonData.links).to.eql(expectedLink);",
+													"    });",
+													"",
+													"    // Verify that attachment file name should be returned correctly",
+													"    pm.test(\"Name should be returned correctly\", () => {",
+													"        pm.expect(jsonData.name).to.eql(fileName);",
+													"    });",
+													"",
+													"    // Verify that Content_Type should be returned correctly",
+													"    pm.test(\"Content_Type should be returned correctly\", () => {",
+													"        pm.expect(jsonData.content_type).to.eql(expectedContentType);",
+													"    });",
+													"",
+													"    // Verify that new generated Id should be returned correctly",
+													"    pm.test(\"Id should be returned correctly\", () => {",
+													"        pm.expect(jsonData.id).to.not.eql(null);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json, text/plain"
+											},
+											{
+												"key": "File-Name",
+												"value": "{{attachmentFileName}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "\"This is testing attachment\""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/{{objectType}}/{{newReleaseId}}/blob-handles",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"{{objectType}}",
+												"{{newReleaseId}}",
+												"blob-handles"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Cleanup",
+							"item": [
+								{
+									"name": "200 - Cleanup - Delete project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// generator csrf token\r",
+													"var base64object = function(input) {\r",
+													" var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));\r",
+													" var base64 = CryptoJS.enc.Base64.stringify(inputWords);\r",
+													" return base64;\r",
+													"};\r",
+													"let uuid = require('uuid');\r",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());\r",
+													"pm.environment.set(\"csrfToken\", token);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "id",
+													"value": "{{projectId1}}",
+													"type": "text"
+												},
+												{
+													"key": "dojo.preventCache",
+													"value": "{{csrfToken}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/proj/delete-project",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"proj",
+												"delete-project"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Logout",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"// Verify that the returned status should be 200-OK",
+													"pm.test(`Response status should be 200-OK ${result? \"\": \" but the returned is \" + pm.response.code + \" and body is:\\n\" + pm.response.text()}`, () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"",
+													"// Clean up environment variables",
+													"const clearVariable = [",
+													"    \"accessToken\", \"tokenType\", \"qtestUserCookie\", \"csrfToken\", \"projectName\", \"startDate\", \"endDate\", \"projectId1\", \"siteAdminId\", \"projectEndDate\", \"projectStartDate\", \"email\", \"fieldIdReleaseStatus\", \"fieldIdReleaseStatusPlanned\", \"fieldIdReleaseStatusInProgress\", \"fieldIdReleaseStatusCompleted\", \"fieldIdReleaseStatusClosed\", \"fieldIdReleaseStartDate\", \"fieldIdReleaseEndDate\", \"fieldIdReleaseDescription\", \"fieldIdReleaseReleaseNote\", \"releaseName\", \"releaseDescription\", \"releaseNote\", \"newReleaseId\", \"objectType\", \"attachmentFileName\", \"releaseStartDate\", \"releaseEndDate\", \"fieldIdBuildStatus\", \"fieldIdBuildStatusPlanned\", \"fieldIdBuildStatusInProgress\", \"fieldIdBuildStatusCompleted\", \"fieldIdBuildStatusClosed\", \"fieldIdBuildBuildDate\", \"fieldIdBuildBuildNote\", \"buildName\", \"buildDate\", \"buildNote\", \"newBuildId1\", \"requirementFields\", \"fieldIdReqStatus\", \"fieldIdReqPriority\", \"fieldIdReqType\", \"fieldIdReqAssignedTo\", \"fieldIdReqDescription\", \"fieldIdReqStatusNew\", \"fieldIdReqStatusInProgress\", \"fieldIdReqStatusReadyForBaseline\", \"fieldIdReqStatusBaselined\", \"fieldIdReqPriorityMusthave\", \"fieldIdReqPriorityShouldhave\", \"fieldIdReqPriorityNicetoHave\", \"fieldIdReqTypeFunctional\", \"fieldIdReqTypeNonfunctional\", \"reqName\", \"reqDescription\", \"newModuleId1\", \"userList\", \"userTestFullName\", \"fieldIdReqAssignedToUserTest\", \"newReqId1\", \"newReqId1\", \"testCaseFields\", \"reqInfo1\", \"fieldIdTestCaseAutomation\", \"fieldIdTestCaseAutomationYes\", \"fieldIdTestCaseAutomationNo\", \"fieldIdTestCaseAutomationContent\", \"fieldIdTestCaseStatus\", \"fieldIdTestCaseStatusNew\", \"fieldIdTestCaseStatusInProgress\", \"fieldIdTestCaseStatusReadyForBaseline\", \"fieldIdTestCaseStatusBaselined\", \"fieldIdTestCaseType\", \"fieldIdTestCaseTypeManual\", \"fieldIdTestCaseTypeAutomation\", \"fieldIdTestCaseTypePerformance\", \"fieldIdTestCaseTypeScenario\", \"fieldIdTestCaseAssignedTo\", \"fieldIdTestCaseAssignedToUserTest\", \"fieldIdTestCaseDescription\", \"fieldIdTestCasePrecondition\", \"fieldIdTestCasePriority\", \"fieldIdTestCasePriorityUndecided\", \"fieldIdTestCasePriorityLow\", \"fieldIdTestCasePriorityMedium\", \"fieldIdTestCasePriorityHigh\", \"fieldIdTestCasePriorityUrgent\", \"testCaseName1\", \"testCaseDescription1\", \"testCasePrecondition1\", \"testStepDescription1\", \"testStepExpected1\", \"newTestCaseId1\", \"testCaseInfo1\", \"testCaseName2\", \"testCaseDescription2\", \"testCasePrecondition2\", \"testCaseAutomationContent\", \"newTestCaseId2\", \"testCaseInfo2\", \"testCase1Steps\", \"testCase1Step1Id\", \"fieldIdDefectSummary\", \"fieldIdDefectDescription\", \"defectSummary\", \"defectDescription\", \"newDefectId1\", \"defectInfo1\"",
+													"];",
+													"",
+													"clearVariable.forEach(function(item) {",
+													"    pm.environment.unset(item);",
+													"});"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/revoke",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"revoke"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Submit a Defect",
+					"item": [
+						{
+							"name": "Precondition",
+							"item": [
+								{
+									"name": "200 - Precondition - Login - Success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(\"Status code should be returned as 200-OK\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+													"    ",
+													"    // Create login cookie of user",
+													"    const rawStr = CryptoJS.enc.Utf8.parse(jsonData.access_token);",
+													"    const base64 = CryptoJS.enc.Base64.stringify(rawStr);",
+													"    pm.environment.set(\"qtestUserCookie\", `UserContextToken=${base64}`);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Get site admin id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //get response body",
+													"    var jsonData = pm.response.json();",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    pm.test(\"Response data contains site admin user property\", function() {",
+													"        pm.expect(jsonData.items[0].username).to.eql(pm.environment.get(\"username\"));",
+													"        pm.expect(pm.response.text()).to.include(\"email\");",
+													"        pm.expect(jsonData.items[0].first_name).to.eql(pm.environment.get(\"firstName\"));",
+													"        pm.expect(jsonData.items[0].last_name).to.eql(pm.environment.get(\"lastName\"));",
+													"        pm.expect(pm.response.text()).to.include(\"status\");",
+													"        pm.expect(pm.response.text()).to.include(\"timezone_offset\");",
+													"        pm.expect(pm.response.text()).to.include(\"country_name\");",
+													"    });",
+													"    ",
+													"    pm.environment.set(\"siteAdminId\", jsonData.items[0].id);",
+													"",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"first_name\": \"{{firstName}}\",\r\n  \"last_name\": \"{{lastName}}\",\r\n  \"email\": \"{{username}}\",\r\n  \"password\": \"{{password}}\"\r\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/users/search?username={{username}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"users",
+												"search"
+											],
+											"query": [
+												{
+													"key": "username",
+													"value": "{{username}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Get user id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //get response body",
+													"    var jsonData = pm.response.json();",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    pm.test(\"Response data contains data of apiuser1@qas.com\", function() {",
+													"        pm.expect(jsonData.items[0].username).to.eql(pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\");",
+													"        pm.expect(pm.response.text()).to.include(\"email\");",
+													"        pm.expect(jsonData.items[0].first_name).to.eql(\"API\");",
+													"        pm.expect(jsonData.items[0].last_name).to.eql(\"User 1\");",
+													"        pm.expect(pm.response.text()).to.include(\"status\");",
+													"        pm.expect(pm.response.text()).to.include(\"timezone_offset\");",
+													"        pm.expect(pm.response.text()).to.include(\"country_name\");",
+													"    });",
+													"    ",
+													"    pm.environment.set(\"userId\", jsonData.items[0].id);",
+													"",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"pm.environment.set(\"assignedUser2\", pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\");",
+													"pm.environment.set(\"firstName2\", \"API\");",
+													"pm.environment.set(\"lastName2\", \"User 1\");",
+													"pm.environment.set(\"email2\", pm.environment.get(\"prefixApiUser\")+\"apiuser1@qas.com\");"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/users/search?username={{assignedUser2}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"users",
+												"search"
+											],
+											"query": [
+												{
+													"key": "username",
+													"value": "{{assignedUser2}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(\"Status code should be returned as 201-Created\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"",
+													"if (result) {",
+													"   //get response body",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"projectId1\", jsonData.id);",
+													"    pm.environment.set(\"projectStartDate\", jsonData.start_date);",
+													"    pm.environment.set(\"projectEndDate\", jsonData.end_date);",
+													"}",
+													""
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"let startDate = new Date();",
+													"let endDate = new Date();",
+													"endDate.setDate(startDate.getDate() + 365);",
+													"",
+													"// Function to add 0 before datetime value if it is less than 10",
+													"Number.prototype.padLeft = function(base, chr) {",
+													"    var len = (String(base || 10).length - String(this).length) + 1;",
+													"    return len > 0 ? new Array(len).join(chr || '0') + this : this;",
+													"};",
+													"",
+													"// Generate dynamic string for ProfileName",
+													"let uniqueString = new Date(),",
+													"    uniqueStringFormat = [(uniqueString.getMonth() + 1).padLeft(),",
+													"        uniqueString.getDate().padLeft(),",
+													"        uniqueString.getFullYear(),",
+													"    ].join('') + '-' + [uniqueString.getHours().padLeft(),",
+													"        uniqueString.getMinutes().padLeft(),",
+													"        uniqueString.getSeconds().padLeft(),",
+													"        uniqueString.getMilliseconds().padLeft()",
+													"    ].join('');",
+													"",
+													"const projectName = \"qTest API - Postman\";",
+													"pm.environment.set(\"projectName\", `${projectName}${uniqueStringFormat}`);",
+													"",
+													"pm.environment.set(\"startDate\", startDate.toISOString());",
+													"pm.environment.set(\"endDate\", endDate.toISOString());",
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{projectName}}\",\n  \"description\": \"Description of qTest API - Postman\",\n  \"start_date\": \"{{startDate}}\",\n  \"end_date\": \"{{endDate}}\",\n  \"admins\": [\n     \"{{username}}\"\n  ],\n  \"automation\": true\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create project 2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(\"Status code should be returned as 201-Created\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"",
+													"if (result) {",
+													"   //get response body",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"projectId2\", jsonData.id);",
+													"    pm.environment.set(\"projectStartDate2\", jsonData.start_date);",
+													"    pm.environment.set(\"projectEndDate2\", jsonData.end_date);",
+													"}",
+													""
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"let startDate = new Date();",
+													"let endDate = new Date();",
+													"endDate.setDate(startDate.getDate() + 365);",
+													"",
+													"// Function to add 0 before datetime value if it is less than 10",
+													"Number.prototype.padLeft = function(base, chr) {",
+													"    var len = (String(base || 10).length - String(this).length) + 1;",
+													"    return len > 0 ? new Array(len).join(chr || '0') + this : this;",
+													"};",
+													"",
+													"// Generate dynamic string for ProfileName",
+													"let uniqueString = new Date(),",
+													"    uniqueStringFormat = [(uniqueString.getMonth() + 1).padLeft(),",
+													"        uniqueString.getDate().padLeft(),",
+													"        uniqueString.getFullYear(),",
+													"    ].join('') + '-' + [uniqueString.getHours().padLeft(),",
+													"        uniqueString.getMinutes().padLeft(),",
+													"        uniqueString.getSeconds().padLeft(),",
+													"        uniqueString.getMilliseconds().padLeft()",
+													"    ].join('');",
+													"",
+													"const projectName = \"qTest API - Postman\";",
+													"pm.environment.set(\"projectName2\", `${projectName}${uniqueStringFormat}`);",
+													"",
+													"pm.environment.set(\"startDate2\", startDate.toISOString());",
+													"pm.environment.set(\"endDate2\", endDate.toISOString());",
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{projectName2}}\",\n  \"description\": \"Description of qTest API - Postman\",\n  \"start_date\": \"{{startDate2}}\",\n  \"end_date\": \"{{endDate2}}\",\n  \"admins\": [\n     \"{{username}}\",\"{{assignedUser2}}\"\n  ],\n  \"automation\": true\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Gets all fields of internal defect - Success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"const fieldData = {",
+													"    \"field_id\": 0,",
+													"    \"field_name\": \"name\"",
+													"};",
+													"let modifiedDefectFields = [];",
+													"",
+													"pm.test(\"Status code should be returned as 200-OK\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"    // Get each field items data from the returned JSON response",
+													"    jsonData.forEach(function(item) {",
+													"        let fieldDataItem = JSON.parse(JSON.stringify(fieldData));",
+													"        fieldDataItem.field_id = item.id;",
+													"        fieldDataItem.field_name = item.label;",
+													"        modifiedDefectFields.add(fieldDataItem);",
+													"    });",
+													"    ",
+													"    // Set the returned data in to environment variable to reuse",
+													"    pm.environment.set(\"defectFields\", JSON.stringify(jsonData));",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/settings/defects/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"settings",
+												"defects",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Gets all fields of internal defect 2 - Success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"const fieldData = {",
+													"    \"field_id\": 0,",
+													"    \"field_name\": \"name\"",
+													"};",
+													"let modifiedDefectFields = [];",
+													"",
+													"pm.test(\"Status code should be returned as 200-OK\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"    // Get each field items data from the returned JSON response",
+													"    jsonData.forEach(function(item) {",
+													"        let fieldDataItem = JSON.parse(JSON.stringify(fieldData));",
+													"        fieldDataItem.field_id = item.id;",
+													"        fieldDataItem.field_name = item.label;",
+													"        modifiedDefectFields.add(fieldDataItem);",
+													"    });",
+													"    ",
+													"    // Set the returned data in to environment variable to reuse",
+													"    pm.environment.set(\"defectFields2\", JSON.stringify(jsonData));",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId2}}/settings/defects/fields",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId2}}",
+												"settings",
+												"defects",
+												"fields"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Precondition - Login - Success with normal user",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(\"Status code is returned as 200-OK\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    let jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken1\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType1\", jsonData.token_type);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Basic dGFtdG1uZ3V5ZW46"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{assignedUser2}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Main",
+							"item": [
+								{
+									"name": "201 - Submit a Defect - Success with Admin user",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"let defectProperties = [];",
+													"",
+													"const defectInfo = {",
+													"    \"Summary\" : \"AT Defect\",",
+													"    \"Description\" : \"This is defect 1 for api testing\"",
+													"};",
+													"",
+													"const defectFields = JSON.parse(pm.environment.get(\"defectFields\"));",
+													"",
+													"// Implementation function Looking for an json item from json item list by expected key and value",
+													"function searchJSONItemFromList(jsonList, expectedKey, expectedValue) {",
+													"    for (let i = 0; i < jsonList.length; i++) {",
+													"        if (jsonList[i][expectedKey] == expectedValue) {",
+													"            return jsonList[i];",
+													"        }",
+													"    }",
+													"    return null;",
+													"}",
+													"",
+													"// Looking for and get id of the expected field from the returned defectFields",
+													"Object.keys(defectInfo).forEach(function (item){",
+													"    expectedDefectField = searchJSONItemFromList(defectFields, \"label\", item);    ",
+													"    let defectItemInfo = {",
+													"        \"field_id\" : expectedDefectField.id,",
+													"        \"field_value\" : defectInfo[item],",
+													"    };",
+													"    defectProperties.add(defectItemInfo);",
+													"});",
+													"",
+													"pm.environment.set(\"defectProperties\", JSON.stringify(defectProperties));"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Initialize test data for verification",
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"const expectedRel = \"self\";",
+													"const expectedPid = \"DF-1\";",
+													"const submitterId = pm.environment.get(\"siteAdminId\");",
+													"",
+													"// Define list of fields which containning field_value_name property",
+													"const selectedValues = {",
+													"    \"Submitter\": `${pm.environment.get(\"firstName\")} ${pm.environment.get(\"lastName\")}`,",
+													"    \"Severity\": \"Average\",",
+													"    \"Priority\": \"Medium\",",
+													"    \"Root Cause\": \"Other\",",
+													"    \"Status\": \"New\",",
+													"    \"Type\": \"Bug\",",
+													"    \"Reason\": \"Additional Info Needed\",",
+													"    \"Category\": \"Other \"",
+													"};",
+													"",
+													"// Implementation function Looking for an json item from json item list by expected key and value",
+													"function searchJSONItemFromList(jsonList, expectedKey, expectedValue) {",
+													"    for (let i = 0; i < jsonList.length; i++) {",
+													"        if (jsonList[i][expectedKey] == expectedValue) {",
+													"            return jsonList[i];",
+													"        }",
+													"    }",
+													"    return null;",
+													"}",
+													"",
+													"// Implementation function to verify data of Defect Property",
+													"function verifyDefectFieldProperty(reponseDefectProperties, fieldName) {",
+													"    // Get defect field properties data from the JSON response",
+													"    const expectedDefectFieldProperties = searchJSONItemFromList(reponseDefectProperties, \"field_name\", fieldName);",
+													"",
+													"    // Get defect field properties from initialization data to be used as baseline when comparision",
+													"    const defectFields = pm.environment.get(\"defectFields\");",
+													"    const expectedDefectFieldId = searchJSONItemFromList(JSON.parse(defectFields), \"label\", fieldName).id;",
+													"    const defectProperties = pm.environment.get(\"defectProperties\");",
+													"    let expectedDefectField = searchJSONItemFromList(JSON.parse(defectProperties), \"field_id\", expectedDefectFieldId);",
+													"",
+													"    pm.test(`- Testing property '${fieldName}':`, () => {",
+													"        // Verify field_id data",
+													"        pm.test(\"'field_id' should be returned correctly\", () => {",
+													"            pm.expect(expectedDefectFieldProperties.field_id).to.eql(expectedDefectFieldId);",
+													"        });",
+													"",
+													"        const allowSelectedItemFields = Object.keys(selectedValues);",
+													"",
+													"        // Verify field_value_name data if the expected field is combobox",
+													"        if (allowSelectedItemFields.indexOf(fieldName) > -1) {",
+													"            // Get JSON of the expected allow selected item field of the defects",
+													"            const allowSelectedItemField = searchJSONItemFromList(JSON.parse(defectFields), \"label\", fieldName);",
+													"",
+													"            // Get id of the selected value item from the initialized data",
+													"            const allowedValues = allowSelectedItemField.allowed_values;",
+													"            const selectedValue = searchJSONItemFromList(allowedValues, \"label\", selectedValues[fieldName]);",
+													"",
+													"            // Verify field_value data",
+													"            pm.test(\"'field_value' should be returned correctly\", () => {",
+													"                pm.expect(expectedDefectFieldProperties.field_value.toString()).to.eql(selectedValue.value.toString());",
+													"            });",
+													"",
+													"            // Verify field_value_name data",
+													"            pm.test(\"'field_value_name' should be returned correctly\", () => {",
+													"                pm.expect(expectedDefectFieldProperties.field_value_name).to.eql(selectedValue.label);",
+													"            });",
+													"        } else {",
+													"            // Verify field_value data",
+													"            // Specified case when verify submitted date in field properties due to returned different timezone of API",
+													"            if (fieldName === \"Submitted Date\") {",
+													"                const formattedSubmittedDate = pm.environment.get(\"projectStartDate\").toString().substring(0, pm.environment.get(\"projectStartDate\").indexOf(\"T\"));",
+													"                pm.test(\"'field_value' should be returned correctly\", () => {",
+													"                    pm.expect(expectedDefectFieldProperties.field_value).to.include(formattedSubmittedDate);",
+													"                });",
+													"            } else {",
+													"                pm.test(\"'field_value' should be returned correctly\", () => {",
+													"                    let expectedDefectFieldValue = \"\";",
+													"                    if (expectedDefectField) {",
+													"                        expectedDefectFieldValue = expectedDefectField.field_value;",
+													"                    }",
+													"                    pm.expect(expectedDefectFieldProperties.field_value).to.eql(expectedDefectFieldValue);",
+													"                });",
+													"            }",
+													"        }",
+													"    });",
+													"}",
+													"",
+													"// Verify that response status should be returned corretly",
+													"pm.test(\"Status code should be returned as 201-Created\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"    const jsonDataLinks = jsonData.links;",
+													"    const expectedHref = `${pm.environment.get(\"qtestUrl\")}/api/v3/projects/${pm.environment.get(\"projectId1\")}/defects/${jsonData.id}`;",
+													"    const expectedUrl = `${pm.environment.get(\"qtestUrl\")}/p/${pm.environment.get(\"projectId1\")}/portal/project#tab=defects&object=17&id=${jsonData.id}`;",
+													"",
+													"    // Verify the returned links data",
+													"    // rel",
+													"    pm.test(\"'links/rel' should be returned correctly\", () => {",
+													"        pm.expect(jsonDataLinks[0].rel).to.eql(expectedRel);",
+													"    });",
+													"",
+													"    // href",
+													"    pm.test(\"'link/href' should be returned correctly\", () => {",
+													"        pm.expect(jsonDataLinks[0].href).to.eql(expectedHref);",
+													"    });",
+													"",
+													"    // Verify the General information",
+													"    // pid",
+													"    pm.test(\"'pid' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.pid).to.eql(expectedPid);",
+													"    });",
+													"",
+													"    // url",
+													"    pm.test(\"'url' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.url).to.eql(expectedUrl);",
+													"    });",
+													"",
+													"    // submitted_date",
+													"    // Get current date to verification",
+													"    // const currentDateTime = new Date();",
+													"    const currentDateTime = new Date();",
+													"    console.log(`currentDateTime: ${currentDateTime}`);",
+													"    // Get projectStartDate",
+													"    const projectStartDate = new Date(pm.environment.get(\"projectStartDate\"));",
+													"    // Get submittedDate of Defect",
+													"    const submittedDate = new Date(jsonData.submitted_date);",
+													"    // Compare that submittedTime of Defect should be less than current date time and greater than projectStartDateTime",
+													"    const compare = currentDateTime.toISOString().split(\"T\")[0] >= submittedDate.toISOString().split(\"T\")[0] && submittedDate.toISOString().split(\"T\")[0] >= projectStartDate.toISOString().split(\"T\")[0];",
+													"    pm.test(\"'submitted_time' should be less than current datetime and greater than projectStartDateTime\", () => {",
+													"        pm.expect(compare).to.be.true;",
+													"    });",
+													"",
+													"    // last_modified_date",
+													"    pm.test(\"'last_modified_date' should be the same as submitted_date\", () => {",
+													"        pm.expect(jsonData).to.have.property(\"last_modified_date\");",
+													"    });",
+													"",
+													"    // submitter_id",
+													"    pm.test(\"'submitter_id' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.submitter_id).to.eql(submitterId);",
+													"    });",
+													"",
+													"    // last_modified_user_id",
+													"    pm.test(\"'last_modified_user_id' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.last_modified_user_id).to.eql(submitterId);",
+													"    });",
+													"",
+													"    // web_url",
+													"    pm.test(\"'web_url' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.web_url).to.eql(expectedUrl);",
+													"    });",
+													"",
+													"    // Verify properties of defect",
+													"    // Summary",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Summary\");",
+													"",
+													"    // Description",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Description\");",
+													"",
+													"    // Affected Release/Build",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Affected Release/Build\");",
+													"",
+													"    // Fixed Release/Build",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Fixed Release/Build\");",
+													"",
+													"    // Submitted Date",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Submitted Date\");",
+													"",
+													"    // Module",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Module\");",
+													"",
+													"    // Assigned To",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Assigned To\");",
+													"",
+													"    // Target Release/Build",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Target Release/Build\");",
+													"",
+													"    // Target Date",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Target Date\");",
+													"",
+													"    // Closed Date",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Closed Date\");",
+													"",
+													"    // Environment",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Environment\");",
+													"",
+													"    // Submitter",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Submitter\");",
+													"",
+													"    // Severity",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Severity\");",
+													"",
+													"    // Priority",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Priority\");",
+													"",
+													"    // Root Cause",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Root Cause\");",
+													"",
+													"    // Status",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Status\");",
+													"",
+													"    // Type",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Type\");",
+													"",
+													"    // Reason",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Reason\");",
+													"",
+													"    // Category",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Category\");",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"properties\": {{defectProperties}},\r\n  \"attachments\": [ {\r\n      \"name\": \"sample_file_name.txt\",\r\n      \"content_type\": \"text/plain\",\r\n      \"data\": \"dGhpcyBpcyBzYW1wbGUgdGVzdA==\"\r\n    }]\r\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId1}}/defects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId1}}",
+												"defects"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Submit a Defect - Success with Normal user",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"let defectProperties = [];",
+													"",
+													"const defectInfo = {",
+													"    \"Summary\" : \"AT Defect 2\",",
+													"    \"Description\" : \"This is defect 2 for api testing\"",
+													"};",
+													"",
+													"const defectFields = JSON.parse(pm.environment.get(\"defectFields2\"));",
+													"",
+													"// Implementation function Looking for an json item from json item list by expected key and value",
+													"function searchJSONItemFromList(jsonList, expectedKey, expectedValue) {",
+													"    for (let i = 0; i < jsonList.length; i++) {",
+													"        if (jsonList[i][expectedKey] == expectedValue) {",
+													"            return jsonList[i];",
+													"        }",
+													"    }",
+													"    return null;",
+													"}",
+													"",
+													"// Looking for and get id of the expected field from the returned defectFields",
+													"Object.keys(defectInfo).forEach(function (item){",
+													"    expectedDefectField = searchJSONItemFromList(defectFields, \"label\", item);    ",
+													"    let defectItemInfo = {",
+													"        \"field_id\" : expectedDefectField.id,",
+													"        \"field_value\" : defectInfo[item],",
+													"    };",
+													"    defectProperties.add(defectItemInfo);",
+													"});",
+													"",
+													"pm.environment.set(\"defectProperties2\", JSON.stringify(defectProperties));"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Initialize test data for verification",
+													"const RESPONSE_CODE = 201;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"const expectedRel = \"self\";",
+													"const expectedPid = \"DF-1\";",
+													"const submitterId = pm.environment.get(\"userId\");",
+													"",
+													"// Define list of fields which containning field_value_name property",
+													"const selectedValues = {",
+													"    \"Submitter\": `${pm.environment.get(\"firstName2\")} ${pm.environment.get(\"lastName2\")}`,",
+													"    \"Severity\": \"Average\",",
+													"    \"Priority\": \"Medium\",",
+													"    \"Root Cause\": \"Other\",",
+													"    \"Status\": \"New\",",
+													"    \"Type\": \"Bug\",",
+													"    \"Reason\": \"Additional Info Needed\",",
+													"    \"Category\": \"Other \"",
+													"};",
+													"",
+													"// Implementation function Looking for an json item from json item list by expected key and value",
+													"function searchJSONItemFromList(jsonList, expectedKey, expectedValue) {",
+													"    for (let i = 0; i < jsonList.length; i++) {",
+													"        if (jsonList[i][expectedKey] == expectedValue) {",
+													"            return jsonList[i];",
+													"        }",
+													"    }",
+													"    return null;",
+													"}",
+													"",
+													"// Implementation function to verify data of Defect Property",
+													"function verifyDefectFieldProperty(reponseDefectProperties, fieldName) {",
+													"    // Get defect field properties data from the JSON response",
+													"    const expectedDefectFieldProperties = searchJSONItemFromList(reponseDefectProperties, \"field_name\", fieldName);",
+													"",
+													"    // Get defect field properties from initialization data to be used as baseline when comparision",
+													"    const defectFields = pm.environment.get(\"defectFields2\");",
+													"    const expectedDefectFieldId = searchJSONItemFromList(JSON.parse(defectFields), \"label\", fieldName).id;",
+													"    const defectProperties = pm.environment.get(\"defectProperties2\");",
+													"    let expectedDefectField = searchJSONItemFromList(JSON.parse(defectProperties), \"field_id\", expectedDefectFieldId);",
+													"",
+													"    pm.test(`- Testing property '${fieldName}':`, () => {",
+													"        // Verify field_id data",
+													"        pm.test(\"'field_id' should be returned correctly\", () => {",
+													"            pm.expect(expectedDefectFieldProperties.field_id).to.eql(expectedDefectFieldId);",
+													"        });",
+													"",
+													"        const allowSelectedItemFields = Object.keys(selectedValues);",
+													"",
+													"        // Verify field_value_name data if the expected field is combobox",
+													"        if (allowSelectedItemFields.indexOf(fieldName) > -1) {",
+													"            // Get JSON of the expected allow selected item field of the defects",
+													"            const allowSelectedItemField = searchJSONItemFromList(JSON.parse(defectFields), \"label\", fieldName);",
+													"",
+													"            // Get id of the selected value item from the initialized data",
+													"            const allowedValues = allowSelectedItemField.allowed_values;",
+													"            const selectedValue = searchJSONItemFromList(allowedValues, \"label\", selectedValues[fieldName]);",
+													"",
+													"            // Verify field_value data",
+													"            pm.test(\"'field_value' should be returned correctly\", () => {",
+													"                pm.expect(expectedDefectFieldProperties.field_value.toString()).to.eql(selectedValue.value.toString());",
+													"            });",
+													"",
+													"            // Verify field_value_name data",
+													"            pm.test(\"'field_value_name' should be returned correctly\", () => {",
+													"                pm.expect(expectedDefectFieldProperties.field_value_name).to.eql(selectedValue.label);",
+													"            });",
+													"        } else {",
+													"            // Verify field_value data",
+													"            // Specified case when verify submitted date in field properties due to returned different timezone of API",
+													"            if (fieldName === \"Submitted Date\") {",
+													"                const formattedSubmittedDate = pm.environment.get(\"projectStartDate2\").toString().substring(0, pm.environment.get(\"projectStartDate2\").indexOf(\"T\"));",
+													"                pm.test(\"'field_value' should be returned correctly\", () => {",
+													"                    pm.expect(expectedDefectFieldProperties.field_value).to.include(formattedSubmittedDate);",
+													"                });",
+													"            } else {",
+													"                pm.test(\"'field_value' should be returned correctly\", () => {",
+													"                    let expectedDefectFieldValue = \"\";",
+													"                    if (expectedDefectField) {",
+													"                        expectedDefectFieldValue = expectedDefectField.field_value;",
+													"                    }",
+													"                    pm.expect(expectedDefectFieldProperties.field_value).to.eql(expectedDefectFieldValue);",
+													"                });",
+													"            }",
+													"        }",
+													"    });",
+													"}",
+													"",
+													"// Verify that response status should be returned corretly",
+													"pm.test(\"Status code should be returned as 201-Created\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"if (result) {",
+													"    const jsonData = pm.response.json();",
+													"    const jsonDataLinks = jsonData.links;",
+													"    const expectedHref = `${pm.environment.get(\"qtestUrl\")}/api/v3/projects/${pm.environment.get(\"projectId2\")}/defects/${jsonData.id}`;",
+													"    const expectedUrl = `${pm.environment.get(\"qtestUrl\")}/p/${pm.environment.get(\"projectId2\")}/portal/project#tab=defects&object=17&id=${jsonData.id}`;",
+													"",
+													"    // Verify the returned links data",
+													"    // rel",
+													"    pm.test(\"'links/rel' should be returned correctly\", () => {",
+													"        pm.expect(jsonDataLinks[0].rel).to.eql(expectedRel);",
+													"    });",
+													"",
+													"    // href",
+													"    pm.test(\"'link/href' should be returned correctly\", () => {",
+													"        pm.expect(jsonDataLinks[0].href).to.eql(expectedHref);",
+													"    });",
+													"",
+													"    // Verify the General information",
+													"    // pid",
+													"    pm.test(\"'pid' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.pid).to.eql(expectedPid);",
+													"    });",
+													"",
+													"    // url",
+													"    pm.test(\"'url' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.url).to.eql(expectedUrl);",
+													"    });",
+													"",
+													"    // submitted_date",
+													"    // Get current date to verification",
+													"    const currentDateTime = new Date();",
+													"    // Get projectStartDate",
+													"    const projectStartDate = new Date(pm.environment.get(\"projectStartDate\"));",
+													"    // Get submittedDate of Defect",
+													"    const submittedDate = new Date(jsonData.submitted_date);",
+													"    // Compare that submittedTime of Defect should be less than current date time and greater than projectStartDateTime",
+													"    ",
+													"    const compare = currentDateTime.toISOString().split(\"T\")[0] >= submittedDate.toISOString().split(\"T\")[0] && submittedDate.toISOString().split(\"T\")[0] >= projectStartDate.toISOString().split(\"T\")[0];",
+													"    pm.test(\"'submitted_time' should be less than current datetime and greater than projectStartDateTime\", () => {",
+													"        pm.expect(compare).to.be.true;",
+													"    });",
+													"",
+													"    // last_modified_date",
+													"    const lastModifiedDate = new Date(jsonData.last_modified_date);",
+													"    pm.test(\"'last_modified_date' should be the same as submitted_date\", () => {",
+													"        pm.expect(lastModifiedDate).to.not.eql(null);",
+													"    });",
+													"",
+													"    // submitter_id",
+													"    pm.test(\"'submitter_id' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.submitter_id).to.eql(submitterId);",
+													"    });",
+													"",
+													"    // last_modified_user_id",
+													"    pm.test(\"'last_modified_user_id' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.last_modified_user_id).to.not.eql(null);",
+													"    });",
+													"",
+													"    // web_url",
+													"    pm.test(\"'web_url' should be returned correctly\", () => {",
+													"        pm.expect(jsonData.web_url).to.eql(expectedUrl);",
+													"    });",
+													"",
+													"    // Verify properties of defect",
+													"    // Summary",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Summary\");",
+													"",
+													"    // Description",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Description\");",
+													"",
+													"    // Affected Release/Build",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Affected Release/Build\");",
+													"",
+													"    // Fixed Release/Build",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Fixed Release/Build\");",
+													"",
+													"    // Submitted Date",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Submitted Date\");",
+													"",
+													"    // Module",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Module\");",
+													"",
+													"    // Assigned To",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Assigned To\");",
+													"",
+													"    // Target Release/Build",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Target Release/Build\");",
+													"",
+													"    // Target Date",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Target Date\");",
+													"",
+													"    // Closed Date",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Closed Date\");",
+													"",
+													"    // Environment",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Environment\");",
+													"",
+													"    // Submitter",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Submitter\");",
+													"",
+													"    // Severity",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Severity\");",
+													"",
+													"    // Priority",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Priority\");",
+													"",
+													"    // Root Cause",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Root Cause\");",
+													"",
+													"    // Status",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Status\");",
+													"",
+													"    // Type",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Type\");",
+													"",
+													"    // Reason",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Reason\");",
+													"",
+													"    // Category",
+													"    verifyDefectFieldProperty(jsonData.properties, \"Category\");",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{tokenType1}} {{accessToken1}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"properties\": {{defectProperties2}},\r\n  \"attachments\": [ {\r\n      \"name\": \"sample_file_name.txt\",\r\n      \"content_type\": \"text/plain\",\r\n      \"data\": \"dGhpcyBpcyBzYW1wbGUgdGVzdA==\"\r\n    }]\r\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId2}}/defects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId2}}",
+												"defects"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Cleanup",
+							"item": [
+								{
+									"name": "200 - Cleanup - Delete project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(\"Status code should be returned as 200-OK\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// generator csrf token\r",
+													"var base64object = function(input) {\r",
+													" var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));\r",
+													" var base64 = CryptoJS.enc.Base64.stringify(inputWords);\r",
+													" return base64;\r",
+													"};\r",
+													"let uuid = require('uuid');\r",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());\r",
+													"pm.environment.set(\"csrfToken\", token);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "id",
+													"value": "{{projectId1}}",
+													"type": "text"
+												},
+												{
+													"key": "dojo.preventCache",
+													"value": "{{csrfToken}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/proj/delete-project",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"proj",
+												"delete-project"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete project 2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(\"Status code should be returned as 200-OK\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// generator csrf token\r",
+													"var base64object = function(input) {\r",
+													" var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));\r",
+													" var base64 = CryptoJS.enc.Base64.stringify(inputWords);\r",
+													" return base64;\r",
+													"};\r",
+													"let uuid = require('uuid');\r",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());\r",
+													"pm.environment.set(\"csrfToken\", token);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "id",
+													"value": "{{projectId2}}",
+													"type": "text"
+												},
+												{
+													"key": "dojo.preventCache",
+													"value": "{{csrfToken}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/proj/delete-project",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"proj",
+												"delete-project"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Logout  - Success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const RESPONSE_CODE = 200;",
+													"const result = pm.response.code === RESPONSE_CODE;",
+													"",
+													"pm.test(\"Status code should be returned as 200-OK\", () => {",
+													"    pm.response.to.have.status(RESPONSE_CODE);",
+													"});",
+													"",
+													"// Clean up environment variables",
+													"const clearVariable = [",
+													"    \"accessToken\", \"tokenType\", \"qtestUserCookie\", \"csrfToken\", \"startDate\", \"endDate\", \"projectId1\", \"apiuser1\", \"projectName\", \"defectFields\", \"defectProperties\", \"defectId\", \"accessToken1\", \"tokenType1\", \"projectName2\", \"startDate2\", \"endDate2\", \"projectId2\", \"projectStartDate2\", \"projectEndDate2\", \"defectFields2\", \"defectProperties2\", \"assignedUser2\", \"siteAdminId\", \"email\", \"email2\", \"userId\", \"firstName2\", \"lastName2\", \"projectStartDate\", \"projectEndDate\"",
+													"];",
+													"",
+													"pm.environment.unset(\"assignedUser2\");",
+													"pm.environment.unset(\"firstName2\");",
+													"pm.environment.unset(\"lastName2\");",
+													"pm.environment.unset(\"email2\");",
+													"",
+													"clearVariable.forEach(function (item){",
+													"    pm.environment.unset(item);    ",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/revoke",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"revoke"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Create module",
+					"item": [
+						{
+							"name": "Precondition",
+							"item": [
+								{
+									"name": "200 - Precondition - Login success",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //assert status",
+													"    pm.test(\"Response status: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    //assert response body",
+													"    var jsonData = pm.response.json();",
+													"    pm.environment.set(\"accessToken\", jsonData.access_token);",
+													"    pm.environment.set(\"tokenType\", jsonData.token_type);",
+													"    ",
+													"    //Encrypt",
+													"    var CryptoJS = require(\"crypto-js\");",
+													"    var rawStr = CryptoJS.enc.Utf8.parse(jsonData.access_token);",
+													"    var base64 = CryptoJS.enc.Base64.stringify(rawStr);",
+													"    pm.environment.set(\"qtestUserCookie\", \"UserContextToken=\" + base64);",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response status: \" + pm.response.code + \"\\n Response body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded"
+											},
+											{
+												"key": "Authorization",
+												"value": "Basic YXBpdHJ5b3V0Og=="
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/token",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "201 - Precondition - Create project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"   //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response code: \" + pm.response.code, function(){",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"    pm.test(\"Response data contains all properties of project data\", function(){",
+													"        pm.expect(pm.response.text()).to.include(\"id\");",
+													"        pm.expect(jsonData.name).to.eql(\"qTest API - Postman\");",
+													"        pm.expect(jsonData.description).to.eql(\"Description of qTest API - Postman\");",
+													"        pm.expect(pm.response.text()).to.include(\"status_id\");",
+													"        pm.expect(pm.response.text()).to.include(\"start_date\");",
+													"        pm.expect(pm.response.text()).to.include(\"end_date\");",
+													"        pm.expect(pm.response.text()).to.include(\"sample\");",
+													"        pm.expect(pm.response.text()).to.include(\"defect_tracking_systems\");",
+													"        pm.expect(pm.response.text()).to.include(\"x_explorer_access_level\");",
+													"        pm.expect(pm.response.text()).to.include(\"date_format\");",
+													"        pm.expect(jsonData.automation.toString()).to.eql(\"true\");",
+													"    });",
+													"    pm.environment.set(\"projectId\", jsonData.id);",
+													"    pm.environment.set(\"projectStartDate\", pm.environment.get(\"startDate\"));",
+													"    pm.environment.set(\"projectEndDate\", pm.environment.get(\"endDate\"));",
+													"} else {",
+													"    //other mark failed",
+													"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+													"        pm.response.to.have.status(201);",
+													"    });",
+													"}",
+													""
+												]
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"var startDate = new Date();",
+													"var endDate = new Date();",
+													"endDate.setDate(startDate.getDate() + 365);",
+													"",
+													"pm.environment.set('startDate', startDate.toISOString());",
+													"pm.environment.set('endDate', endDate.toISOString());",
+													""
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"qTest API - Postman\",\n  \"description\": \"Description of qTest API - Postman\",\n  \"start_date\": \"{{startDate}}\",\n  \"end_date\": \"{{endDate}}\",\n  \"admins\": [\n    \"{{username}}\"\n  ],\n  \"automation\": true\n}"
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Main",
+							"item": [
+								{
+									"name": "test case sharing = false",
+									"item": [
+										{
+											"name": "201 - Create module - Success",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"type": "text/javascript",
+														"exec": [
+															"if (pm.response.code === 201) {",
+															"    pm.test(\"Response status \" + pm.response.code, function () {",
+															"        pm.response.to.have.status(201); ",
+															"    });",
+															"    ",
+															"    var jsonData = pm.response.json();",
+															"    ",
+															"    pm.test(\"Response data has links\", function () {",
+															"        pm.expect(jsonData.links).to.not.eql(null);",
+															"    });",
+															"    ",
+															"    pm.test(\"Response data has id\", function() {",
+															"       pm.expect(jsonData.id).to.not.eql(null); ",
+															"    });",
+															"    ",
+															"    pm.test(\"Response data contains name \" + jsonData.name, function() {",
+															"        pm.expect(jsonData.name).to.eql(\"Module 1\");",
+															"    });",
+															"    ",
+															"    pm.test(\"Response data has order property\", function() {",
+															"        pm.expect(jsonData.order).to.not.eql(null);",
+															"    });",
+															"    ",
+															"    pm.test(\"Response data has pid property\", function() {",
+															"        pm.expect(jsonData.pid).to.not.eql(null);",
+															"    });",
+															"    ",
+															"    pm.test(\"Response data has created_date property\", function() {",
+															"        pm.expect(jsonData.created_date).to.not.eql(null);",
+															"    });",
+															"    ",
+															"    pm.test(\"Response data has last_modify_date property\", function() {",
+															"        pm.expect(jsonData.created_date).to.not.eql(null);",
+															"    });",
+															"    ",
+															"    pm.test(\"Response data has parent_id property\", function() {",
+															"        pm.expect(jsonData.parent_id).to.not.eql(null);",
+															"    });",
+															"    ",
+															"    pm.test(\"Response data has description property\", function() {",
+															"        pm.expect(jsonData.description).to.eql(\"Description of Module 1\");",
+															"    });",
+															"    ",
+															"    pm.environment.set(\"parentId\", jsonData.id);",
+															"    ",
+															"} else {",
+															"    pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+															"        pm.response.to.have.status(201);",
+															"    });",
+															"}"
+														]
+													}
+												}
+											],
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "{{tokenType}} {{accessToken}}"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"name\": \"Module 1\",\r\n  \"description\": \"Description of Module 1\",\r\n  \"shared\": false\r\n}"
+												},
+												"url": {
+													"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/modules",
+													"host": [
+														"{{qtestUrl}}"
+													],
+													"path": [
+														"api",
+														"v3",
+														"projects",
+														"{{projectId}}",
+														"modules"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "Cleanup",
+							"item": [
+								{
+									"name": "200 - Cleanup - Delete module 1",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    pm.test(\"Response status: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"    var jsonData = pm.response.json();",
+													"",
+													"    pm.test(\"Response object has message: \", function() {",
+													"        pm.expect(jsonData.message).to.not.eql(null);",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/modules/{{moduleId}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"modules",
+												"{{moduleId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete parentId",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    pm.test(\"Response status: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"",
+													"} else {",
+													"    pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/api/v3/projects/{{projectId}}/modules/{{parentId}}",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"api",
+												"v3",
+												"projects",
+												"{{projectId}}",
+												"modules",
+												"{{parentId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Delete project",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    //get response body",
+													"    var jsonData = pm.response.json();",
+													"    ",
+													"    pm.test(\"Response code: \" + pm.response.code, function(){",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    ",
+													"    pm.test(\"Delete project success without any errors\", function(){",
+													"        pm.expect(jsonData.hasError.toString()).to.eql(\"false\");",
+													"        pm.expect(jsonData.result.id).to.eql(pm.environment.get(\"projectId\"));",
+													"        pm.expect(jsonData.result.status).to.eql(\"Archive\");",
+													"    });",
+													"    pm.environment.unset(\"projectId\");",
+													"    pm.environment.unset(\"projectStartDate\");",
+													"    pm.environment.unset(\"projectEndDate\");",
+													"} else {",
+													"    //other mark failed",
+													"     pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function(){",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// generator csrf token\r",
+													"var base64object = function(input) {\r",
+													" var inputWords = CryptoJS.enc.Utf8.parse(JSON.stringify(input));\r",
+													" var base64 = CryptoJS.enc.Base64.stringify(inputWords);\r",
+													" return base64;\r",
+													"};\r",
+													"let uuid = require('uuid');\r",
+													"let token = uuid.v4() + \"QAS\" + base64object(Date.now());\r",
+													"pm.environment.set(\"csrfToken\", token);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "{{qtestUserCookie}}"
+											},
+											{
+												"key": "X-CSRF-Token",
+												"value": "{{csrfToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "id",
+													"value": "{{projectId}}",
+													"type": "text"
+												},
+												{
+													"key": "dojo.preventCache",
+													"value": "{{csrfToken}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/admin/proj/delete-project",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"admin",
+												"proj",
+												"delete-project"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "200 - Cleanup - Logout",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"",
+													"    pm.test(\"Response code: \" + pm.response.code, function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"    pm.environment.unset(\"parentId\");",
+													"    pm.environment.unset(\"moduleId\");",
+													"    pm.environment.unset(\"qtestUserCookie\");",
+													"    pm.environment.unset(\"csrfToken\");",
+													"    pm.environment.unset(\"accessToken\");",
+													"    pm.environment.unset(\"tokenType\");",
+													"    pm.environment.unset(\"startDate\");",
+													"    pm.environment.unset(\"endDate\");",
+													"  ",
+													"} else {",
+													"    //other mark failed",
+													"    pm.test(\"Response code: \" + pm.response.code + \"\\n Reponse body: \" + pm.response.text(), function() {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{tokenType}} {{accessToken}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{qtestUrl}}/oauth/revoke",
+											"host": [
+												"{{qtestUrl}}"
+											],
+											"path": [
+												"oauth",
+												"revoke"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}
