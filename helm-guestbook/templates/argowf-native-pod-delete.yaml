@@ -144,5 +144,5 @@ spec:
       container:
         image: postman/newman
         command: [sh, -c]
-        args: ['sh '/postman/run.sh smoketest1'']
+        args: ["sh '/postman/run.sh smoketest1'"]
         workingDir: /src/test-conductor
