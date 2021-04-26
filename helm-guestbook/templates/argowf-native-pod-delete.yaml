@@ -130,27 +130,27 @@ spec:
     #     args: ["git status && ls && cat VERSION"]
     #     workingDir: /src
 
-    - name: git-clone
-      inputs:
-        artifacts:
-        - name: argo-source
-          path: /src
-          git:
-            repo: https://github.com/byangtri/guestbook
-            revision: "HEAD"
-      container:
-        image: agiletrailblazers/azdo-agent:latest #postman/newman
-        command: [bash]
-        # args: ["ls && sh chmod +x -R /src && sh 'run.sh smoketest1'"]
-        workingDir: /src/postman
-        source: |
-          sh 'run.sh /smoketest1'
+    # - name: git-clone
+    #   inputs:
+    #     artifacts:
+    #     - name: argo-source
+    #       path: /src
+    #       git:
+    #         repo: https://github.com/byangtri/guestbook
+    #         revision: "HEAD"
+    #   container:
+    #     image: agiletrailblazers/azdo-agent:latest #postman/newman
+    #     command: [bash]
+    #     # args: ["ls && sh chmod +x -R /src && sh 'run.sh smoketest1'"]
+    #     workingDir: /src/postman
+    #     source: |
+    #       sh 'run.sh /smoketest1'
 
-    - name: print-message
-      inputs:
-        parameters:
-        - name: message
-      container:
-        image: alpine:latest
-        command: [sh, -c]
-        args: ["echo result was: {{inputs.parameters.message}}"]
+    # - name: print-message
+    #   inputs:
+    #     parameters:
+    #     - name: message
+    #   container:
+    #     image: alpine:latest
+    #     command: [sh, -c]
+    #     args: ["echo result was: {{inputs.parameters.message}}"]
