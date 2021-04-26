@@ -136,7 +136,7 @@ spec:
             revision: "HEAD"
       container:
         image: agiletrailblazers/azdo-agent:latest
-        command: [bash]
+        command: [sh, -c]
         # args: ["ls && sh chmod +x -R /src && sh 'run.sh smoketest1'"]
         args: ["ls"]
         workingDir: /src/
