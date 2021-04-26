@@ -22,8 +22,12 @@ spec:
         #     template: revert-chaos
         - - name: git-clone
             template: git-clone
-        - - name: run-regression-testing
-            template: run-regression-testing
+        - - name: print-message
+            template: print-message
+            arguments:
+              parameters:
+              - name: message
+                value: "{{steps.generate.outputs.result}}"
 
     - name: run-chaos
       inputs:
@@ -135,17 +139,18 @@ spec:
             repo: https://github.com/byangtri/guestbook
             revision: "HEAD"
       container:
-        image: agiletrailblazers/azdo-agent:latest
+        image: agiletrailblazers/azdo-agent:latest #postman/newman
         command: [bash]
         # args: ["ls && sh chmod +x -R /src && sh 'run.sh smoketest1'"]
         workingDir: /src/postman
         source: |
           sh 'run.sh /smoketest1'
 
-    - name: run-regression-testing
+    - name: print-message
+      inputs:
+        parameters:
+        - name: message
       container:
-        image: postman/newman
+        image: alpine:latest
         command: [sh, -c]
-        # args: ["sh '/postman/run.sh smoketest1'"]
-        args: ["ls"]
-        # workingDir: /src/
+        args: ["echo result was: {{inputs.parameters.message}}"]
