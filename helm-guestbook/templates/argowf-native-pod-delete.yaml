@@ -137,7 +137,7 @@ spec:
       container:
         image: golang:1.10
         command: [sh, -c]
-        args: ["git status && ls && cat VERSION"]
+        args: ["git status && ls"]
         workingDir: /src
 
     - name: run-regression-testing
