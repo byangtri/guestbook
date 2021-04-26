@@ -30,7 +30,7 @@ case $param in
     ;;
   "smoketest1")
     FOLDER="SmokeTest1"
-    COLLECTION="./postman/QTestManagerSmokeTest1.postman_collection.json"
+    COLLECTION="QTestManagerSmokeTest1.postman_collection.json"
     ;;
   "smoketest2")
     FOLDER="SmokeTest2"
