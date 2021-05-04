@@ -3,7 +3,6 @@ apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: {{ template "helm-guestbook.fullname" . }}
-  namespace: {{ template "helm-guestbook.fullname" . }}
   {{- with .Values.deployment.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

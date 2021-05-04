@@ -3,7 +3,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "helm-guestbook.fullname" . }}
-  namespace: {{ template "helm-guestbook.fullname" . }}
   {{- with .Values.deployment.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
