@@ -4,6 +4,9 @@
 
 replicaCount: 3
 
+rollouts:
+  enabled: true
+
 image:
   repository: gcr.io/heptio-images/ks-guestbook-demo
   tag: 0.1
@@ -14,6 +17,7 @@ service:
   port: 80
 
 workflow:
+  enabled: false
   adminModeNamespace: litmus
 
 deployment:

@@ -1,3 +1,4 @@
+{{- if .Values.workflow.enabled -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
@@ -78,13 +79,13 @@ spec:
               kind: Job
               metadata:
                 labels:
-                  app: guestbook-staging-helm-guestbook-bench
-                generateName: guestbook-staging-helm-guestbook-bench-
+                  app: {{ template "helm-guestbook.name" . }}-bench
+                generateName: {{ template "helm-guestbook.name" . }}-bench-
               spec:
                 template:
                   metadata:
                     labels:
-                      app: guestbook-staging-helm-guestbook-bench
+                      app: {{ template "helm-guestbook.name" . }}-bench
                   spec:
                     restartPolicy: Never
                     containers:
@@ -94,15 +95,15 @@ spec:
                       command:
                       - /bin/sh
                       env:
-                        - name: guestbook-staging-helm-guestbook_SVC_NAME
-                          value: "guestbook-staging-helm-guestbook.default.svc.cluster.local"
-                        - name: guestbook-staging-helm-guestbook_PORT_NUM
+                        - name: {{ template "helm-guestbook.name" . }}_SVC_NAME
+                          value: "{{ template "helm-guestbook.name" . }}.default.svc.cluster.local"
+                        - name: {{ template "helm-guestbook.name" . }}_PORT_NUM
                           value: "80"
                         - name: BENCHMARK_DURATION
                           value: "300"
                       image: devth/alpine-bench
                       imagePullPolicy: Always
-                      name: guestbook-staging-helm-guestbook-bench
+                      name: {{ template "helm-guestbook.name" . }}-bench
       container:
         image: lachlanevenson/k8s-kubectl
         command: [sh, -c]
@@ -154,3 +155,4 @@ spec:
     #     image: alpine:latest
     #     command: [sh, -c]
     #     args: ["echo result was: {{inputs.parameters.message}}"]
+{{- end }}

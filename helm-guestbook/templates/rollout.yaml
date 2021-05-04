@@ -1,3 +1,4 @@
+{{- if .Values.rollout.enabled -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
@@ -83,3 +84,4 @@ spec:
       # Pauses indefinitely until manually resumed
       - setWeight: 50
       - pause: {}
+{{- end }}
