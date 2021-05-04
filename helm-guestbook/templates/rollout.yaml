@@ -66,7 +66,6 @@ spec:
           duration: 1h # 1 hour
       - setWeight: 20
       - pause: {} # pause indefinitely
-
   # minReadySeconds: 30
   # strategy:
   #   canary: #Indicates that the rollout should use the Canary strategy
