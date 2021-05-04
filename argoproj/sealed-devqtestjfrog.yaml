@@ -1,0 +1,18 @@
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  annotations:
+    sealedsecrets.bitnami.com/cluster-wide: "true"
+  creationTimestamp: null
+  name: devqtestjfrog
+spec:
+  encryptedData:
+    .dockerconfigjson: AgBE9VTFssqZaLA+GMyblXv8cMPTEm2bvQbqsUavfH4sKdRB8NxwaosdRw4kuqUW2lPPYFRI61rO5w2cfr4dz+9Cdcf2ylrd6x6YouM9+KPpC/a7uMS7gRd2f7iwOhbH/pZp/6HHRJhnD0KYokgrGlOwrAxYT8uXZrOv4F0SxYk9jYvgHpYreI9xOnEit+7N2sSAvx8dF5flWa0aPlMfHJMkgxaipaVSlv7WCYRANWo6Nm7PqXIjq2soMnSKYJvg9lOGJ0fl53LLwPz5R1nP157puP8tXPYEjScBYXm1/6s3lhT80vZJggs+chSiTNpd3oIhKRXMlSDeVSScBOAQ4mJ4R1efobi+/fKWD4zOOjffn2nNl2k2PzAWoqE4gHYxMZVlA5zkjoR378NDc1SkAEdYWHIfbyf6G0YXJebgFIjHTZWdZyE6py0JTzybL3dEc3c7c5ss5wnUfLw29/3LH1KanWsneqlpgV7Dfu8SN0nn54n5/j09qxP8N1cV1lj6wHJL+6TlUZGzh+xx6P/5B4ErG3aZX9f8KIbDpmFm/OC13RD7/Ba3Yx4/2REeVUALs/EKX+Atb4ADNhCnWZDwjjAxfKhQ5782oQK0dMUbs6JDd9Gu2DxlTeMVc4409ZrCXT8femILt5VXCglymtkjMlXYYYQ90bsyVjZ2PZ9yf35HO8/S/nwTP2lh0dm3F7Md331pYQFLG3btpbYzMGhYZQSzDqF+S/RlZpHtcbKqVWUdpBge2K6YpwMn+CVFdgxPTfPM2YdTPzDqjRSDv9Jkx1+a3wlHuVoJMAkQm1Zs6xCntD8ZgmDFj5DPT5ZdGOjYGXyrGfaJl09UBVYJXxi2SCKrWYsV1JM9hVREvXX68UV19rYLVNKDjNa7nm9MdH116Bw=
+  template:
+    metadata:
+      annotations:
+        sealedsecrets.bitnami.com/cluster-wide: "true"
+      creationTimestamp: null
+      name: devqtestjfrog
+    type: kubernetes.io/dockerconfigjson
+

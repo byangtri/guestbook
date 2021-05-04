@@ -1,0 +1,69 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-nginx
+  namespace: argocd
+spec:
+  destination:
+    namespace: ingress-nginx
+    server: 'https://kubernetes.default.svc'
+  ignoreDifferences:
+    - group: autoscaling
+      jsonPointers:
+        - /spec/metrics
+      kind: HorizontalPodAutoscaler
+  project: default
+  source:
+    chart: ingress-nginx
+    helm:
+      values: |
+        controller:
+          extraArgs:
+            http-port: 8080
+            https-port: 8443
+          containerPort:
+            http: 8080
+            https: 8443
+          service:
+            ports:
+              http: 80
+              https: 443
+            targetPorts:
+              http: 8080
+              https: 8443
+          image:
+            allowPrivilegeEscalation: false
+          autoscaling:
+            enabled: false
+            minReplicas: 3
+            maxReplicas: 8
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              namespace: prometheus
+              namespaceSelector:
+                any: true
+            service:
+              annotations:
+                prometheus.io/scrape: "true"
+                prometheus.io/port: "10254"
+          livenessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+            port: 10254
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+            port: 10254
+    repoURL: 'https://kubernetes.github.io/ingress-nginx'
+    targetRevision: 3.29.0
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

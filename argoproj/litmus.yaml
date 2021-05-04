@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    app.kubernetes.io/instance: argoproj
+  name: litmus
+  namespace: argocd
+spec:
+  destination:
+    namespace: litmus
+    server: 'https://kubernetes.default.svc'
+  project: default
+  source:
+    chart: litmus
+    repoURL: 'https://litmuschaos.github.io/litmus-helm/'
+    targetRevision: 1.13.7
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      jsonPointers:
+        - /metadata/annotations
+        - /metadata/labels
+        - /spec/validation
+      kind: CustomResourceDefinition

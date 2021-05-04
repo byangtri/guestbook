@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: guestbook
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: helm-guestbook
+    app.kubernetes.io/instance: guestbook
+    chart: helm-guestbook-0.1.0
+    heritage: Helm
+    release: guestbook
+spec:
+  rules:
+  - host: guestbook.23.21.25.6.nip.io
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: guestbook-helm-guestbook
+          servicePort: 80
