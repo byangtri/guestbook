@@ -63,16 +63,16 @@ spec:
       maxUnavailable: 0
       canaryService: guestbook-canary-service
       stableService: {{ template "helm-guestbook.fullname" . }}
-      trafficRouting:
-        nginx:
-          # The referenced ingress will be injected with a custom action annotation, directing
-          # the Nginx to split traffic between the canary and stable Service using headers
-          stableIngress: {{ template "helm-guestbook.fullname" . }}
-          annotationPrefix: nginx.ingress.kubernetes.io 
-          {{- with .Values.ingress.canary.annotations }}
-          additionalIngressAnnotations:
-          {{- toYaml . | nindent 12 }}
-          {{- end }}
+      # trafficRouting:
+      #   nginx:
+      #     # The referenced ingress will be injected with a custom action annotation, directing
+      #     # the Nginx to split traffic between the canary and stable Service using headers
+      #     stableIngress: {{ template "helm-guestbook.fullname" . }}
+      #     annotationPrefix: nginx.ingress.kubernetes.io 
+      #     {{- with .Values.ingress.canary.annotations }}
+      #     additionalIngressAnnotations:
+      #     {{- toYaml . | nindent 12 }}
+      #     {{- end }}
       steps:
       - analysis:
           templates:
