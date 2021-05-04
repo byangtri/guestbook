@@ -16,9 +16,9 @@ service:
   type: NodePort
   port: 80
 
-workflow:
-  enabled: false
-  adminModeNamespace: litmus
+# workflow:
+#   enabled: false
+#   adminModeNamespace: litmus
 
 deployment:
   annotations:
